@@ -1,0 +1,25 @@
+version: 3
+
+vars:
+  PYTHON: python3
+  PIP: pip3
+  PROJECTPYTHON: ".mbse/bin/{{.PYTHON}}"
+  PROJECTPIP: ".mbse/bin/{{.PIP}}"
+  MBSEENV: ".mbse"
+
+tasks:
+  init:
+    desc: Setup python virtual environment and install requirements
+    cmds:
+      - "{{.PYTHON}} -m venv {{.MBSEENV}}"
+      - "{{.PROJECTPYTHON}} -m pip install -r requirements.txt"
+
+  install:
+    desc: Install python package using project PIP
+    cmds:
+      - "{{.PROJECTPIP}} install {{.CLI_ARGS}}"
+
+  test:
+    desc: Run tests
+    cmds:
+      - "{{.PROJECTPYTHON}} -m unittest discover"
