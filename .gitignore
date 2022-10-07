@@ -1,5 +1,7 @@
+.idea
+
 # Python Virtual environment
-mbse/
+.mbse/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
