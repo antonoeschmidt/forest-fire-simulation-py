@@ -1,4 +1,5 @@
 from enum import Enum
+from abc import ABC, abstractclassmethod
 
 
 class CellState(Enum):
@@ -18,7 +19,7 @@ def cell_state_description():
     print()
 
 
-class CellularAutomaton(object):
+class CellularAutomaton(ABC):
     """
     Class representing a forest as a grid and
     """
@@ -33,18 +34,22 @@ class CellularAutomaton(object):
         self._changed = False
         self._step = 0
 
-        self.grid = [CellState.MED_VEG for x in range(0, self.rows * self.cols)]
+        self.grid = [CellState.MED_VEG for x in range(
+            0, self.rows * self.cols)]
 
     def ignite(self, x: int, y: int):
         self.grid[self.cols * x + y] = CellState.BURNING
 
-    def get(self, r: int, c: int):
-        index = r * self.cols + c
-        if index < 0 or index > (self.cols * self.rows):
+    def get(self, x: int, y: int) -> CellState:
+        if x < 0 or x > self.rows-1:
             return CellState.EMPTY
+        if y < 0 or y > self.cols-1:
+            return CellState.EMPTY
+
+        index = x * self.cols + y
         return self.grid[index]
 
-    def _get(self, i: int):
+    def _get(self, i: int) -> CellState:
         if i < 0 or i > ((self.cols * self.rows) - 1):
             return CellState.EMPTY
         return self.grid[i]
@@ -52,14 +57,23 @@ class CellularAutomaton(object):
     def print(self):
         for row in range(0, self.rows):
             for cols in range(0, self.cols):
-                print(f"{self.get(row, cols).value} ", end='')
+                print(f"{self._get(self.cols *row + cols).value} ", end='')
             print()
         print()
+
+    def data(self):
+        data = []
+        for row in range(0, self.rows):
+            rowrow = []
+            for cols in range(0, self.cols):
+                rowrow.append(self._get(self.cols * row + cols).value)
+            data.append(rowrow)
+        return data
 
     def step(self):
         self._changed = False
         self._step = self._step + 1
-        new_grid = [self.rule(i) for i, c in enumerate(self.grid)]
+        new_grid = [self.rule(self.xy(i)) for i, c in enumerate(self.grid)]
         self.grid = new_grid
 
         self._done = not self._changed
@@ -72,25 +86,20 @@ class CellularAutomaton(object):
 
         print(f"Finished in {self._step} steps")
 
-    def rule(self, index: int):
+    def xy(self, index: int) -> tuple[int, int]:
         """
-        The `rule` function determines what the next state of a cell should be.
-
-        The decision can be based on:
-        * Neighbouring states
-        * Wind
-        * Dryness/wetness
-        * And many more
+        Convert index to (x,y) coordinate
         """
-        # Let's make it burn for one round if N, S, E or W cell are burning
-        original = self._get(index)
-        new = original
+        col = index % self.cols
+        row = int(index / self.cols)
+        return col, row
 
-        if original == CellState.BURNING or original == CellState.EMPTY:
-            new = CellState.EMPTY
+    def done(self):
+        return self._done
 
-        elif CellState.BURNING in [self._get(x) for x in [index - 1, index + 1, index + self.rows, index - self.rows]]:
-            new = CellState.BURNING
-
-        self._changed |= new != original
-        return new
+    @abstractclassmethod
+    def rule(cls, xy):
+        """
+        OVerride
+        """
+        pass

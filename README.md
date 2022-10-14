@@ -20,7 +20,8 @@
     
     The virtual environment can be deactivate by executing `deactivate`.
 3. Install the requirements: `pip install requirements.txt`
-4. Everything have been set up, remember to execute the code wihtin a terminal with the activated virtual environment.
+4. Run `pip install -e .` to install this project as a local package
+5. Everything have been set up, remember to execute the code wihtin a terminal with the activated virtual environment.
 
 [Python Virutal Environment](https://docs.python.org/3/library/venv.html) is a way to sepereate Python Pacakges in your development environement. Without an environment, all Python projects use global installed packages, i.e. they all use the same version. Upgrading a pacakge might break other projects (or this project). Instead the packages can be installed in an virtaul environment.
 

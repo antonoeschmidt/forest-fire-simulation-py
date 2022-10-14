@@ -18,3 +18,9 @@ class TestStringMethods(unittest.TestCase):
         for r in range(0, 10):
             for c in range(0, 10):
                 self.assertNotEqual(self.ca.get(r, c), CellState.BURNING)
+
+    def test_xy(self):
+        self.assertEqual(self.ca.xy(0), (0,0))
+        self.assertEqual(self.ca.xy(10), (10,0))
+        self.assertEqual(self.ca.xy(self.rows*self.cols-1), (self.cols-1,self.rows-1))
+    
