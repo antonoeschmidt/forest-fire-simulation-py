@@ -1,36 +1,34 @@
+import asyncio
+
 import simpy
+import websockets
 
-from processes.forest import Forest
-
-def fire(env, forest):
-    yield env.timeout(1)
-    forest.step()
+from ca.cellular_automaton import CellularAutomaton
+from ca.simple_fire import SimpleCa
 
 
-# Modify this to work as in https://simpy.readthedocs.io/en/latest/examples/carwash.html 
-def setup(env, num_machines, washtime, t_inter):
-    """Create a carwash, a number of initial cars and keep creating cars
-    approx. every ``t_inter`` minutes."""
-    # Create the carwash
-    carwash = Carwash(env, num_machines, washtime)
-
-    # Create 4 initial cars
-    for i in range(4):
-        env.process(car(env, 'Car %d' % i, carwash))
-
-    # Create more cars while the simulation is running
+def fire_progression(env: simpy.core.Environment, forest: CellularAutomaton, websocket):
     while True:
-        yield env.timeout(random.randint(t_inter - 2, t_inter + 2))
-        i += 1
-        env.process(car(env, 'Car %d' % i, carwash))
+        yield env.timeout(1)
+        forest.step()
+        data = {'grid': forest.data(), 'grid_size': 20}
+        await websocket.send(data)
 
-if __name__ == "__main__":
+
+async def program(websocket):
+    forest = SimpleCa(20, 20)
+
     env = simpy.Environment()
 
-    forest = Forest(20, 20)
+    env.process(fire_progression(env, forest, websocket))
 
-    env.process(fire(env,forest))
+    env.run(until=100)
 
-    env.run(until=15)
 
-    forest.fire.print()
+async def main():
+    async with websockets.serve(program, "localhost", 8000):
+        await asyncio.Future()  # run forever
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

@@ -2,12 +2,13 @@ import asyncio
 import websockets
 import json
 
-from ca.simplefire import SimpleCa
+from ca.simple_fire import SimpleCa
+
 
 async def handler(websocket, path):
     grid_size = 50
     ca = SimpleCa(grid_size, grid_size)
-    ca.ignite(3,3)
+    ca.ignite(3, 3)
     data = {}
     while not ca.done():
         ca.step()
@@ -16,6 +17,7 @@ async def handler(websocket, path):
         data["grid"] = grid
         await websocket.send(json.dumps(data))
         # time.sleep(1)
+
 
 start_server = websockets.serve(handler, "localhost", 8000)
 
