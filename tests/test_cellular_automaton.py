@@ -1,6 +1,7 @@
 import unittest
 
-from ca.ca import CellularAutomaton, CellState
+from ca.cellular_automaton import CellState
+from ca.simple_fire import SimpleCa
 
 
 class TestStringMethods(unittest.TestCase):
@@ -8,7 +9,7 @@ class TestStringMethods(unittest.TestCase):
     def setUp(self) -> None:
         self.rows = 10
         self.cols = 15
-        self.ca = CellularAutomaton(self.rows, self.cols)
+        self.ca = SimpleCa(self.rows, self.cols)
 
     def test_is_burning(self):
         self.ca.ignite(2, 2)
@@ -20,7 +21,6 @@ class TestStringMethods(unittest.TestCase):
                 self.assertNotEqual(self.ca.get(r, c), CellState.BURNING)
 
     def test_xy(self):
-        self.assertEqual(self.ca.xy(0), (0,0))
-        self.assertEqual(self.ca.xy(10), (10,0))
-        self.assertEqual(self.ca.xy(self.rows*self.cols-1), (self.cols-1,self.rows-1))
-    
+        self.assertEqual(self.ca.xy(0), (0, 0))
+        self.assertEqual(self.ca.xy(10), (10, 0))
+        self.assertEqual(self.ca.xy(self.rows * self.cols - 1), (self.cols - 1, self.rows - 1))
