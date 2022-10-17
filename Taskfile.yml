@@ -17,7 +17,7 @@ tasks:
       - "{{.PROJECTPIP}} install -e ."
 
   install:
-    desc: Install python package using project PIP
+    desc: Install python package using project PIP. Usage `task install -- <python_package>`
     cmds:
       - "{{.PROJECTPIP}} install {{.CLI_ARGS}}"
       - "{{.PROJECTPIP}} freeze >  requirements.txt"
