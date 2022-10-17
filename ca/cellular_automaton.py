@@ -21,7 +21,7 @@ def cell_state_description() -> None:
 
 class CellularAutomaton(ABC):
     """
-    Class representing a forest as a grid and
+    Class representing a forest as a grid but stored in 1d array
     """
 
     def __init__(self, n: int, m: int):
