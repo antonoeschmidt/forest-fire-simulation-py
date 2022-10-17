@@ -1,8 +1,7 @@
 import asyncio
 import json
-import time
-from threading import Thread
 import queue
+from threading import Thread
 
 import simpy
 import websockets
@@ -19,10 +18,16 @@ def fire_progression(env: simpy.core.Environment, forest: CellularAutomaton):
         queue.put(data)
 
 
-async def program():
+def program():
     forest = SimpleCa(20, 20)
     forest.ignite(2, 2)
-    env = simpy.Environment()
+
+    # If we want to slow down the Simulation, use the RealtimeEnvironment
+    # https://simpy.readthedocs.io/en/latest/topical_guides/real-time-simulations.html
+    if slowSimulation:
+        env = simpy.RealtimeEnvironment(factor=1, strict=False)
+    else:
+        env = simpy.Environment()
 
     env.process(fire_progression(env, forest))
 
@@ -30,10 +35,12 @@ async def program():
 
 
 async def handler(websocket):
+    """
+    Do not use time.sleep to "slow down" simulation, this might result in the queue getting full :O
+    """
     while True:
         item = queue.get()
         await websocket.send(json.dumps(item))
-        time.sleep(1)
 
 
 async def main():
@@ -41,14 +48,10 @@ async def main():
         await asyncio.Future()  # run forever
 
 
-queue = queue.Queue()
-
 if __name__ == "__main__":
-    asyncio.run(program())
-    asyncio.run(main())
+    slowSimulation = True
+    queue = queue.Queue()
+    simulation = Thread(target=program)
+    simulation.start()
 
-    # simulation = Thread(target=program, args=(queue,))
-    # websocket1 = Thread(target=main, args=(queue,))
-    #
-    # simulation.start()
-    # websocket1.start()
+    asyncio.run(main())
