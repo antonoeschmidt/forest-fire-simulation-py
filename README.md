@@ -1,4 +1,4 @@
-# Forst fire simalation
+# Forest fire simulation
 
 ## 02223 Model-Based Systems Engineering
 
@@ -34,7 +34,7 @@ _Run `task init` to do the steps below._
 4. Run `pip install -e .` to install this project as a local package
 5. Everything have been set up, remember to execute the code within a terminal with the activated virtual environment.
 
-[Python Virutal Environment](https://docs.python.org/3/library/venv.html) is a way to separate Python Packages in your
+[Python Virtual Environment](https://docs.python.org/3/library/venv.html) is a way to separate Python Packages in your
 development environment. Without an environment, all Python projects use global installed packages, i.e. they all use
 the same version. Upgrading a pacakge might break other projects (or this project). Instead, the packages can be
 installed in a virtual environment.
