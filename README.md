@@ -7,8 +7,17 @@
 ## Requirements
 
 * [Python 3](https://www.python.org/downloads/) (>= 3.6)
+* _Soft_: [taskfile.dev](https://taskfile.dev/installation/) >=3
+
+## Run tests
+`task test` or `python -m unittest discover`(Remember to use project python).
+
+## Run simulation with websocket
+`task run` or `python simulation.py` (Remember to use project python).
 
 ## Initial setup
+
+_Run `task init` to do the steps below._
 
 1. _Optional_: Create a virtual environment called `.mbse` by executing `python -m venv .mbse` in the project root.
 2. _Optional_: Activate the virtual environment:
@@ -39,5 +48,5 @@ installed in a virtual environment.
 
 ### Package is missing?
 
-Somebody might have added a dependency, run `pip install requirements.txt` to ensure all the required packages are
+Somebody might have added a dependency, run `pip install requirements.txt` (`task install-reqs`) to ensure all the required packages are
 installed.
