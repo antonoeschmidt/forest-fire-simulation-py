@@ -12,7 +12,8 @@ tasks:
     desc: Setup python virtual environment and install requirements
     cmds:
       - "{{.PYTHON}} -m venv {{.MBSEENV}}"
-      - "{{.PROJECTPYTHON}} -m pip install -r requirements.txt"
+      - "{{.PROJECTPIP}} install --upgrade pip"
+      - "{{.PROJECTPIP}} install -r requirements.txt"
       - "{{.PROJECTPYTHON}} setup.py"
 
   install:
