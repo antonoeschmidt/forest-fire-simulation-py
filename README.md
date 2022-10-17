@@ -6,7 +6,7 @@
 
 ## Requirements
 
-* [Python 3](https://www.python.org/downloads/) (>= 3.6)
+* [Python 3](https://www.python.org/downloads/) (>= 3.10)
 * _Soft_: [taskfile.dev](https://taskfile.dev/installation/) >=3
 
 ## Run tests
