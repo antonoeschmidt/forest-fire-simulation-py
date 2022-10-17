@@ -40,7 +40,7 @@ the same version. Upgrading a pacakge might break other projects (or this projec
 installed in a virtual environment.
 
 ## Adding a Python Package
-
+_With task: `task install -- <package-id>`_
 1. `pip install <package-id>`
 2. `pip freeze > requirements.txt` - to ensure others knows which packages are expected
 
