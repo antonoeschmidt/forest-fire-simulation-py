@@ -14,7 +14,7 @@ tasks:
       - "{{.PYTHON}} -m venv {{.MBSEENV}}"
       - "{{.PROJECTPIP}} install --upgrade pip"
       - "{{.PROJECTPIP}} install -r requirements.txt"
-      - "{{.PROJECTPYTHON}} setup.py"
+      - "{{.PROJECTPIP}} install -e ."
 
   install:
     desc: Install python package using project PIP
