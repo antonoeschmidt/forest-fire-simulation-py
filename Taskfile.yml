@@ -13,13 +13,25 @@ tasks:
     cmds:
       - "{{.PYTHON}} -m venv {{.MBSEENV}}"
       - "{{.PROJECTPYTHON}} -m pip install -r requirements.txt"
+      - "{{.PROJECTPYTHON}} setup.py"
 
   install:
     desc: Install python package using project PIP
     cmds:
       - "{{.PROJECTPIP}} install {{.CLI_ARGS}}"
+      - "{{.PROJECTPIP}} freeze >  requirements.txt"
+
+  install-reqs:
+    desc: Install requirements
+    cmds:
+      - "{{.PROJECTPIP}} install -r requirements.txt"
 
   test:
     desc: Run tests
     cmds:
       - "{{.PROJECTPYTHON}} -m unittest discover"
+
+  run:
+    desc: Run simulation
+    cmds:
+      - "{{.PROJECTPYTHON}} simulation.py"
