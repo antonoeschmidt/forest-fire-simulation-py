@@ -11,13 +11,32 @@ class TestStringMethods(unittest.TestCase):
         self.cols = 15
         self.ca = SimpleCa(self.rows, self.cols)
 
-    def test_is_burning(self):
+    def test_is_burning_four_times(self):
         self.ca.ignite(2, 2)
         self.assertEqual(self.ca.get(2, 2), CellState.BURNING)
 
+    def test_is_burning(self):
+        self.ca.ignite(1, 1)
+        self.ca.ignite(2, 2)
+        self.ca.ignite(3, 3)
+        self.ca.ignite(4, 4)
+        expected_burn_count = 4
+
+        burn_count = 0
+        for r in range(0, self.rows):
+            for c in range(0, self.cols):
+                if self.ca.get(r, c) == CellState.BURNING:
+                    burn_count = burn_count + 1
+
+        self.assertEqual(expected_burn_count, burn_count)
+        self.assertEqual(self.ca.get(1, 1), CellState.BURNING)
+        self.assertEqual(self.ca.get(2, 2), CellState.BURNING)
+        self.assertEqual(self.ca.get(3, 3), CellState.BURNING)
+        self.assertEqual(self.ca.get(4, 4), CellState.BURNING)
+
     def test_is_not_burning(self):
-        for r in range(0, 10):
-            for c in range(0, 10):
+        for r in range(0, self.rows):
+            for c in range(0, self.cols):
                 self.assertNotEqual(self.ca.get(r, c), CellState.BURNING)
 
     def test_xy(self):
