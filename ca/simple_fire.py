@@ -1,11 +1,4 @@
-from enum import Enum
-from traceback import print_tb
-import asyncio
-import time
-import websockets
-import json
-
-from ca.ca import CellState, CellularAutomaton
+from ca.cellular_automaton import CellState, CellularAutomaton
 
 
 class SimpleCa(CellularAutomaton):

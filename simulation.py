@@ -1,36 +1,57 @@
+import asyncio
+import json
+import queue
+from threading import Thread
+
 import simpy
+import websockets
 
-from processes.forest import Forest
-
-def fire(env, forest):
-    yield env.timeout(1)
-    forest.step()
+from ca.cellular_automaton import CellularAutomaton
+from ca.simple_fire import SimpleCa
 
 
-# Modify this to work as in https://simpy.readthedocs.io/en/latest/examples/carwash.html 
-def setup(env, num_machines, washtime, t_inter):
-    """Create a carwash, a number of initial cars and keep creating cars
-    approx. every ``t_inter`` minutes."""
-    # Create the carwash
-    carwash = Carwash(env, num_machines, washtime)
-
-    # Create 4 initial cars
-    for i in range(4):
-        env.process(car(env, 'Car %d' % i, carwash))
-
-    # Create more cars while the simulation is running
+def fire_progression(env: simpy.core.Environment, forest: CellularAutomaton):
     while True:
-        yield env.timeout(random.randint(t_inter - 2, t_inter + 2))
-        i += 1
-        env.process(car(env, 'Car %d' % i, carwash))
+        yield env.timeout(1)
+        forest.step()
+        data = {'grid': forest.data(), 'grid_size': 20}
+        queue.put(data)
+
+
+def program():
+    forest = SimpleCa(20, 20)
+    forest.ignite(2, 2)
+
+    # If we want to slow down the Simulation, use the RealtimeEnvironment
+    # https://simpy.readthedocs.io/en/latest/topical_guides/real-time-simulations.html
+    if slowSimulation:
+        env = simpy.RealtimeEnvironment(factor=1, strict=False)
+    else:
+        env = simpy.Environment()
+
+    env.process(fire_progression(env, forest))
+
+    env.run(until=100)
+
+
+async def handler(websocket):
+    """
+    Do not use time.sleep to "slow down" simulation, this might result in the queue getting full :O
+    """
+    while True:
+        item = queue.get()
+        await websocket.send(json.dumps(item))
+
+
+async def main():
+    async with websockets.serve(handler, "localhost", 8000):
+        await asyncio.Future()  # run forever
+
 
 if __name__ == "__main__":
-    env = simpy.Environment()
+    slowSimulation = True
+    queue = queue.Queue()
+    simulation = Thread(target=program)
+    simulation.start()
 
-    forest = Forest(20, 20)
-
-    env.process(fire(env,forest))
-
-    env.run(until=15)
-
-    forest.fire.print()
+    asyncio.run(main())
