@@ -30,7 +30,7 @@ _Run `task init` to do the steps below._
     * **Linux**/**MacOS**: `chmod +x ./.mbse/bin/[activate|deactivate]`
 
    The virtual environment can be deactivated by executing `deactivate`.
-3. Install the requirements: `pip install requirements.txt`
+3. Install the requirements: `pip install -r requirements.txt`
 4. Run `pip install -e .` to install this project as a local package
 5. Everything have been set up, remember to execute the code within a terminal with the activated virtual environment.
 
