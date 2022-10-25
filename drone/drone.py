@@ -27,7 +27,7 @@ class drone():
     
     ## is at drop destination
     def has_reached_destination(self):
-        return self.position == self.destination and self.position != self.home_base_station.location:
+        return self.position == self.destination and self.position != self.home_base_station.location
     
     ## not sure what i have to write
     def drop_water(self):
