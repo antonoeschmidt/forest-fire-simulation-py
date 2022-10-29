@@ -1,7 +1,7 @@
 import unittest
 
 from ca.cellular_automaton import CellState
-from ca.simple_fire import SimpleCa
+from ca.simple_cell import SimpleCa
 
 
 class TestStringMethods(unittest.TestCase):

@@ -64,6 +64,7 @@ class CellularAutomaton(ABC):
         self._done = False
         self._changed = False
         self._step = 0
+        self.wind = wind
 
         self.grid = [CellObject(veg = VegetationType.MED_VEG, fire = 0, wind = wind, hydration = 0, burned = False) 
                                                                         for x in range(0, self.rows * self.cols)]
