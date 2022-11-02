@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from typing import List, Tuple
+from simulation import fire_callback
 
 class VegetationType(Enum):
     LOW_VEG = 3
@@ -55,7 +56,7 @@ class CellularAutomaton(ABC):
     Class representing a forest as a grid but stored in 1d array
     """
 
-    def __init__(self, n: int, m: int, wind: tuple[int, int] = (0,0)):
+    def __init__(self, n: int, m: int, env, wind: tuple[int, int] = (0,0), ):
         """
 
         """
@@ -65,9 +66,12 @@ class CellularAutomaton(ABC):
         self._changed = False
         self._step = 0
         self.wind = wind
+        self.env = env
 
         self.grid = [CellObject(veg = VegetationType.MED_VEG, fire = 0, wind = wind, hydration = 0, burned = False) 
                                                                         for x in range(0, self.rows * self.cols)]
+
+    
 
     def ignite(self, x: int, y: int) -> None:
         """
@@ -75,6 +79,7 @@ class CellularAutomaton(ABC):
         """
         index = self.cols * x + y
         self.grid[index] = self.grid[index].factory(fire=1)
+        self.env.event(fire_callback)
 
     def get(self, x: int, y: int) -> CellObject:
         """

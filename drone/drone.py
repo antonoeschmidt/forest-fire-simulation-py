@@ -4,7 +4,8 @@ from drone.base_station import base_station
 # The drone class doesn't contain a lot of info. It has some basic methods but nothing too fancy.
 class drone():
     
-    def __init__(self, capacity: int, base_station: base_station):
+    def __init__(self, capacity: int, base_station: base_station, env):
+        self.env = env
         self.speed = 100 # km/h
         self.capacity = capacity # liters of water
         self.recharge_time = 0
@@ -15,6 +16,7 @@ class drone():
         self.destination = tuple(int, int)
         self.home_base_station = base_station
         self.has_water = True
+        self.water_dropped = env.event()
 
     def reset(self):
         pass
@@ -33,6 +35,7 @@ class drone():
     def drop_water(self):
         self.has_water = False
         self.destination = self.home_base_station.location
+        self.env.event()
     
     def reaching_destination_in_next_step(self):
         self.get_distance <= self.speed
