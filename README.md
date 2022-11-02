@@ -50,3 +50,8 @@ _With task: `task install -- <package-id>`_
 
 Somebody might have added a dependency, run `pip install requirements.txt` (`task install-reqs`) to ensure all the required packages are
 installed.
+
+# Base variables
+- Grid size: 100m x 100m
+- Tick length: 5 minutes
+- Base fire spread: 5 km/h

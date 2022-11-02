@@ -2,7 +2,7 @@ import asyncio
 import websockets
 import json
 
-from ca.simple_fire import SimpleCa
+from ca.simple_cell import SimpleCa
 
 
 async def handler(websocket, path):
