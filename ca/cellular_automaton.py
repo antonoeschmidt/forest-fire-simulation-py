@@ -1,20 +1,51 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from enum import Enum
+from typing import List, Tuple
 
-
-class CellState(Enum):
-    EMPTY = 1
+class VegetationType(Enum):
+    LOW_VEG = 3
+    MED_VEG = 4
+    HIGH_VEG = 5
+    WATER = 6
+    ROCK = 7
+class FrontEndValues(Enum):
+    BURNED = 1
     BURNING = 2
     LOW_VEG = 3
     MED_VEG = 4
     HIGH_VEG = 5
+    WATER = 6
+    ROCK = 7
 
+@dataclass(frozen=True)
+class CellObject:
+    """
+    Veg (vegetation type): integer = matching the Enum of CellState
+    Fire: integer = counts how many ticks the cell has been burning for
+    Wind: Tuple(int,int) = vector determining the wind for that cell
+    Hydration: float = a percentage of hydration
+    """
+    veg: VegetationType
+    fire: int
+    wind: Tuple[int, int]
+    hydration: float
+    burned: bool
+    
+    def factory(self, veg: int = None, fire: int = None, wind: Tuple[int, int] = None, 
+                                        hydration: float = None, burned: bool = None):
+
+        return CellObject(veg = veg if veg else self.veg,  
+                        fire = fire if fire else self.fire,
+                        wind = wind if wind else self.wind,
+                        hydration = hydration if hydration else self.hydration,
+                        burned = burned if burned else self.burned)
 
 def cell_state_description() -> None:
     """
     Prints the Label and Value for each member in the Enum
     """
-    for name, value in CellState.__members__.items():
+    for name, value in VegetationType.__members__.items():
         print(f"{name}: {value.value}", end='; ')
     print()
 
@@ -24,7 +55,7 @@ class CellularAutomaton(ABC):
     Class representing a forest as a grid but stored in 1d array
     """
 
-    def __init__(self, n: int, m: int):
+    def __init__(self, n: int, m: int, wind: tuple[int, int] = (0,0)):
         """
 
         """
@@ -33,36 +64,38 @@ class CellularAutomaton(ABC):
         self._done = False
         self._changed = False
         self._step = 0
+        self.wind = wind
 
-        self.grid = [CellState.MED_VEG for x in range(
-            0, self.rows * self.cols)]
+        self.grid = [CellObject(veg = VegetationType.MED_VEG, fire = 0, wind = wind, hydration = 0, burned = False) 
+                                                                        for x in range(0, self.rows * self.cols)]
 
     def ignite(self, x: int, y: int) -> None:
         """
         Changes a given cell state to burning
         """
-        self.grid[self.cols * x + y] = CellState.BURNING
+        index = self.cols * x + y
+        self.grid[index] = self.grid[index].factory(fire=1)
 
-    def get(self, x: int, y: int) -> CellState:
+    def get(self, x: int, y: int) -> CellObject:
         """
         Get a given cell state.
 
         Compute the 1d array index from x and y
         """
         if x < 0 or x > self.rows - 1:
-            return CellState.EMPTY
+            return None
         if y < 0 or y > self.cols - 1:
-            return CellState.EMPTY
+            return None
 
         index = x * self.cols + y
         return self.grid[index]
 
-    def _get(self, i: int) -> CellState:
+    def _get(self, i: int) -> CellObject:
         """
         Internal getter for 1d index
         """
         if i < 0 or i > ((self.cols * self.rows) - 1):
-            return CellState.EMPTY
+            return None
         return self.grid[i]
 
     def print(self):
@@ -75,7 +108,7 @@ class CellularAutomaton(ABC):
             print()
         print()
 
-    def data(self) -> [[int]]:
+    def data(self) -> List[List[int]]:
         """
         Return a 2d representation of the forest
         """
@@ -83,7 +116,13 @@ class CellularAutomaton(ABC):
         for row in range(0, self.rows):
             row_values = []
             for cols in range(0, self.cols):
-                row_values.append(self._get(self.cols * row + cols).value)
+                cell = self._get(self.cols * row + cols)
+                if cell.burned:
+                    row_values.append(FrontEndValues.BURNED.value)
+                elif cell.fire > 0:
+                    row_values.append(FrontEndValues.BURNING.value)
+                else:
+                    row_values.append(cell.veg.value)
             data.append(row_values)
         return data
 
@@ -112,7 +151,7 @@ class CellularAutomaton(ABC):
 
         print(f"Finished in {self._step} steps")
 
-    def xy(self, index: int) -> tuple[int, int]:
+    def xy(self, index: int) -> Tuple[int, int]:
         """
         Convert index to (x,y) coordinate
         """
@@ -128,7 +167,7 @@ class CellularAutomaton(ABC):
 
     @classmethod
     @abstractmethod
-    def rule(cls, xy):
+    def rule(cls, xy: Tuple[int, int]):
         """
         Override
         """

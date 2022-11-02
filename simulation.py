@@ -7,19 +7,19 @@ import simpy
 import websockets
 
 from ca.cellular_automaton import CellularAutomaton
-from ca.simple_fire import SimpleCa
+from ca.simple_cell import SimpleCa
 
 
 def fire_progression(env: simpy.core.Environment, forest: CellularAutomaton):
     while True:
         yield env.timeout(1)
         forest.step()
-        data = {'grid': forest.data(), 'grid_size': 20}
+        data = {'grid': forest.data(), 'grid_size': 30, 'wind': forest.wind}
         queue.put(data)
 
 
 def program():
-    forest = SimpleCa(20, 20)
+    forest = SimpleCa(30, 30, (3,1))
     forest.ignite(2, 2)
 
     # If we want to slow down the Simulation, use the RealtimeEnvironment
@@ -32,6 +32,7 @@ def program():
     env.process(fire_progression(env, forest))
 
     env.run(until=100)
+    print("Simulation done")
 
 
 async def handler(websocket):
