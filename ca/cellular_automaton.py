@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from typing import List, Tuple
-from simulation import fire_callback
+from ca.callbacks import fire_callback
 
 class VegetationType(Enum):
     LOW_VEG = 3
@@ -19,7 +19,7 @@ class FrontEndValues(Enum):
     WATER = 6
     ROCK = 7
 
-@dataclass(frozen=True)
+@dataclass(frozen=False)
 class CellObject:
     """
     Veg (vegetation type): integer = matching the Enum of CellState
@@ -30,11 +30,11 @@ class CellObject:
     veg: VegetationType
     fire: int
     wind: Tuple[int, int]
-    hydration: float
+    hydration: int
     burned: bool
     
     def factory(self, veg: int = None, fire: int = None, wind: Tuple[int, int] = None, 
-                                        hydration: float = None, burned: bool = None):
+                                        hydration: int = None, burned: bool = None):
 
         return CellObject(veg = veg if veg else self.veg,  
                         fire = fire if fire else self.fire,
@@ -56,7 +56,7 @@ class CellularAutomaton(ABC):
     Class representing a forest as a grid but stored in 1d array
     """
 
-    def __init__(self, n: int, m: int, env, wind: tuple[int, int] = (0,0), ):
+    def __init__(self, n: int, m: int, env, drone_base_station, wind: tuple[int, int] = (0,0)):
         """
 
         """
@@ -67,6 +67,7 @@ class CellularAutomaton(ABC):
         self._step = 0
         self.wind = wind
         self.env = env
+        self.drone_base_station = drone_base_station
 
         self.grid = [CellObject(veg = VegetationType.MED_VEG, fire = 0, wind = wind, hydration = 0, burned = False) 
                                                                         for x in range(0, self.rows * self.cols)]
@@ -79,7 +80,11 @@ class CellularAutomaton(ABC):
         """
         index = self.cols * x + y
         self.grid[index] = self.grid[index].factory(fire=1)
-        self.env.event(fire_callback)
+        #e = self.env.event()
+        #e.callbacks.append(fire_callback)
+        #e.succeed(value=(x,y))
+        #self.drone_base_station.ignited(index)
+        #print("ignite")
 
     def get(self, x: int, y: int) -> CellObject:
         """
@@ -122,8 +127,11 @@ class CellularAutomaton(ABC):
             row_values = []
             for cols in range(0, self.cols):
                 cell = self._get(self.cols * row + cols)
-                if cell.burned:
+                if cell.hydration > 0:
+                    row_values.append(cell.veg.value)
+                elif cell.burned:
                     row_values.append(FrontEndValues.BURNED.value)
+                
                 elif cell.fire > 0:
                     row_values.append(FrontEndValues.BURNING.value)
                 else:

@@ -1,5 +1,5 @@
 import unittest
-
+import simpy
 from ca.simple_cell import SimpleCa
 
 
@@ -8,7 +8,7 @@ class TestStringMethods(unittest.TestCase):
     def setUp(self) -> None:
         self.rows = 10
         self.cols = 15
-        self.ca = SimpleCa(self.rows, self.cols)
+        self.ca = SimpleCa(self.rows, self.cols, simpy.Environment())
 
     def test_is_burning_four_times(self):
         self.ca.ignite(2, 2)

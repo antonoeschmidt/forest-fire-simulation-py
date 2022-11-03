@@ -1,6 +1,8 @@
 import asyncio
 import json
 import queue
+from drone.drone import drone
+from drone.base_station import base_station
 from threading import Thread
 
 import simpy
@@ -13,24 +15,18 @@ def drone_progression(env: simpy.core.Environment, drones, forest):
     while True:
         yield env.timeout(1)
         drones.step()
-        forest
 
-def fire_progression(env: simpy.core.Environment, forest: CellularAutomaton):
+def fire_progression(env: simpy.core.Environment, forest: CellularAutomaton, drone_base_station):
     while True:
         yield env.timeout(1)
         forest.step()
-        data = {'grid': forest.data(), 'grid_size': 30, 'wind': forest.wind}
+        drone_base_station.step()
+        data = {'grid': forest.data(), 'grid_size': 30, 'wind': forest.wind }
         queue.put(data)
 
-def fire_callback(event):
-    print('Called back from', event.value)
 
 def program():
-    forest = SimpleCa(30, 30, (3,1))
-    fire = env.event()
-    env.trigger(fire)
-    water = env.event()
-    forest.ignite(2, 2)
+    
 
     # If we want to slow down the Simulation, use the RealtimeEnvironment
     # https://simpy.readthedocs.io/en/latest/topical_guides/real-time-simulations.html
@@ -39,10 +35,19 @@ def program():
     else:
         env = simpy.Environment()
 
-    env.process(fire_progression(env, forest))
-    env.process(drone_progression(env, drones, forest))
+    forest = SimpleCa(30, 30, env, (3,1))
+    forest.ignite(29, 29)
+    base_station_location = (2,2)
+    drones = [drone(50, base_station_location, env), drone(50, base_station_location, env), drone(50, base_station_location, env)]
+    drone_base_station = base_station(drones, base_station_location, forest) 
+    
 
-    env.run(until=100)
+    env.process(fire_progression(env, forest, drone_base_station))
+    #env.process(drone_progression(env, drones, forest))
+    end_event = env.event()
+    env.run(until=40)
+    end_event.succeed()
+    
     print("Simulation done")
 
 
