@@ -50,7 +50,8 @@ class base_station():
                 index = self.forest.rows * drone.position[0] + drone.position[1]
                
                 #self.forest.grid[index].gotWater = True
-                self.forest.grid[index] = self.forest.grid[index].factory(hydration=5, fire = 0)
+                print("vand", index)
+                self.forest.grid[index] = self.forest.grid[index].factory(hydration=5)
                 
             #elif drone.position != self.location and drone.get_distance() <= drone.speed * 2:
                 #self.determine_water_drop_location(drone)

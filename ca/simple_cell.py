@@ -24,15 +24,16 @@ class SimpleCa(CellularAutomaton):
 
     def fire_rule(self, new: CellObject, original: CellObject, x: int, y: int):
         # Let's make it burn for one round if N, S, E or W cell are burning
+        new = original.factory()
         if original.hydration > 1:
-            new = new.factory(fire = 0) #hydration = original.hydration - 1
-            print("cell", new.fire, new.hydration)
+            new = new.factory() #hydration = original.hydration - 1
+            #print("cell", new.fire, new.hydration)
         
         elif original.burned:
             new = new.factory()
             
         
-        elif original.fire:
+        elif original.fire and new.hydration < 1:
             #print("original.fire hydro", original.hydration)
             new = new.factory(fire = original.fire + 1)
         else:
@@ -48,11 +49,11 @@ class SimpleCa(CellularAutomaton):
                 pass
             
             # check cells in the wind direction
-            for cell in cells:
-                (x_cell, y_cell) = cell
-                if self.get(x_cell, y_cell) is not None and self.get(x_cell, y_cell).fire > 0 and self.get(x_cell, y_cell).hydration < 2:
-                    new = new.factory(fire = 1)
-                    break
+            # for cell in cells:
+            #     (x_cell, y_cell) = cell
+            #     if self.get(x_cell, y_cell) is not None and self.get(x_cell, y_cell).fire > 0 and self.get(x_cell, y_cell).hydration < 2:
+            #         new = new.factory(fire = 1)
+            #         break
 
         return new
 

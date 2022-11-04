@@ -11,19 +11,23 @@ import websockets
 from ca.cellular_automaton import CellularAutomaton
 from ca.simple_cell import SimpleCa
 
-def drone_progression(env: simpy.core.Environment, drones, forest):
+def drone_progression(env: simpy.core.Environment, drone_base_station):
     while True:
         yield env.timeout(1)
-        drones.step()
+        drone_base_station.step()
+        
 
-def fire_progression(env: simpy.core.Environment, forest: CellularAutomaton, drone_base_station):
+def fire_progression(env: simpy.core.Environment, forest: CellularAutomaton):
     while True:
         yield env.timeout(1)
         forest.step()
-        drone_base_station.step()
+       
+def data_progression(env: simpy.core.Environment, forest: CellularAutomaton, drone_base_station: base_station):
+    while True:
+        yield env.timeout(1)
+        #TODO -> update model with drone data.
         data = {'grid': forest.data(), 'grid_size': 30, 'wind': forest.wind }
         queue.put(data)
-
 
 def program():
     
@@ -36,13 +40,18 @@ def program():
         env = simpy.Environment()
 
     forest = SimpleCa(30, 30, env, (3,1))
-    forest.ignite(29, 29)
+    forest.ignite(28, 28)
     base_station_location = (2,2)
-    drones = [drone(50, base_station_location, env), drone(50, base_station_location, env), drone(50, base_station_location, env)]
+    drones = []
+    for i in range(5):
+        drones.append(drone(50, base_station_location, env))
+    #drones = [drone(50, base_station_location, env), drone(50, base_station_location, env), drone(50, base_station_location, env)]
     drone_base_station = base_station(drones, base_station_location, forest) 
     
 
-    env.process(fire_progression(env, forest, drone_base_station))
+    env.process(fire_progression(env, forest))
+    env.process(drone_progression(env, drone_base_station))
+    env.process(data_progression(env, forest, drone_base_station))
     #env.process(drone_progression(env, drones, forest))
     end_event = env.event()
     env.run(until=40)
@@ -65,6 +74,7 @@ async def main():
         await asyncio.Future()  # run forever
 
 
+
 if __name__ == "__main__":
     slowSimulation = True
     queue = queue.Queue()
@@ -72,3 +82,12 @@ if __name__ == "__main__":
     simulation.start()
 
     asyncio.run(main())
+    
+    # env = simpy.Environment()
+    # forest = SimpleCa(5, 5, env, (3,1))
+    # forest.ignite(2, 2)
+    # base_station_location = (2,2)
+    # drones = [drone(50, base_station_location, env), drone(50, base_station_location, env), drone(50, base_station_location, env)]
+    # drone_base_station = base_station(drones, base_station_location, forest)
+    # forest.run(True)
+    #env.process(fire_progression(env, forest, drone_base_station))

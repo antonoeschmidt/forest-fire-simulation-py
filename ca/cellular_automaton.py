@@ -25,7 +25,7 @@ class CellObject:
     Veg (vegetation type): integer = matching the Enum of CellState
     Fire: integer = counts how many ticks the cell has been burning for
     Wind: Tuple(int,int) = vector determining the wind for that cell
-    Hydration: float = a percentage of hydration
+    Hydration: int = a percentage of hydration
     """
     veg: VegetationType
     fire: int
@@ -80,11 +80,6 @@ class CellularAutomaton(ABC):
         """
         index = self.cols * x + y
         self.grid[index] = self.grid[index].factory(fire=1)
-        #e = self.env.event()
-        #e.callbacks.append(fire_callback)
-        #e.succeed(value=(x,y))
-        #self.drone_base_station.ignited(index)
-        #print("ignite")
 
     def get(self, x: int, y: int) -> CellObject:
         """
@@ -114,7 +109,7 @@ class CellularAutomaton(ABC):
         """
         for row in range(0, self.rows):
             for cols in range(0, self.cols):
-                print(f"{self._get(self.cols * row + cols).value} ", end='')
+                print(f"{self._get(self.cols * row + cols).hydration} ", end='')
             print()
         print()
 
