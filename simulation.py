@@ -4,20 +4,22 @@ import queue
 from drone.drone import drone
 from drone.base_station import base_station
 from threading import Thread
-
+import threading
 import simpy
 import websockets
-
 from ca.cellular_automaton import CellularAutomaton
 from ca.simple_cell import SimpleCa
+
+
+simulation_done = threading.local()
+simulation_done.x = False
 
 def drone_progression(env: simpy.core.Environment, drone_base_station):
     while True:
         yield env.timeout(1)
         drone_base_station.step()
-        
 
-def fire_progression(env: simpy.core.Environment, forest: CellularAutomaton):
+def fire_progression(env: simpy.core.Environment, forest: CellularAutomaton, grid_size: int):
     while True:
         yield env.timeout(1)
         forest.step()
@@ -29,12 +31,20 @@ def data_progression(env: simpy.core.Environment, forest: CellularAutomaton, dro
         data = {'grid': forest.data(), 'grid_size': 30, 'wind': forest.wind }
         queue.put(data)
 
-def program():
-    
+
+def program(grid_size: int = 30, 
+            wind: list[int] = [3,1], 
+            start_cell: list[int] = [15,15], 
+            slow_simulation: bool = False, 
+            run_until: int = 10):
+
+    forest = SimpleCa(grid_size, grid_size, (wind[0], wind[1]))
+    forest.ignite(start_cell[0], start_cell[1])
 
     # If we want to slow down the Simulation, use the RealtimeEnvironment
     # https://simpy.readthedocs.io/en/latest/topical_guides/real-time-simulations.html
-    if slowSimulation:
+
+    if slow_simulation:
         env = simpy.RealtimeEnvironment(factor=1, strict=False)
     else:
         env = simpy.Environment()
@@ -53,11 +63,13 @@ def program():
     env.process(drone_progression(env, drone_base_station))
     env.process(data_progression(env, forest, drone_base_station))
     #env.process(drone_progression(env, drones, forest))
-    end_event = env.event()
     env.run(until=40)
-    end_event.succeed()
     
     print("Simulation done")
+    env.process(fire_progression(env, forest, grid_size))
+    env.run(until=run_until)
+
+    simulation_done.x = True
 
 
 async def handler(websocket):
@@ -68,26 +80,29 @@ async def handler(websocket):
         item = queue.get()
         await websocket.send(json.dumps(item))
 
+def websocket():
+    asyncio.run(websocket1())
 
-async def main():
-    async with websockets.serve(handler, "localhost", 8000):
+async def websocket1():
+    print("Websocket Started")
+    async with websockets.serve(handler, "0.0.0.0", 8000):
         await asyncio.Future()  # run forever
-
-
-
-if __name__ == "__main__":
-    slowSimulation = True
-    queue = queue.Queue()
-    simulation = Thread(target=program)
-    simulation.start()
-
-    asyncio.run(main())
+    print("Websocket Finished")
     
-    # env = simpy.Environment()
-    # forest = SimpleCa(5, 5, env, (3,1))
-    # forest.ignite(2, 2)
-    # base_station_location = (2,2)
-    # drones = [drone(50, base_station_location, env), drone(50, base_station_location, env), drone(50, base_station_location, env)]
-    # drone_base_station = base_station(drones, base_station_location, forest)
-    # forest.run(True)
-    #env.process(fire_progression(env, forest, drone_base_station))
+def start_websocket():
+    global queue
+    queue = queue.Queue()
+    ws = Thread(target=websocket)
+    ws.start()
+
+def run(simulation_data):
+    print("Started run")
+    simulation = Thread(target=program(simulation_data['grid_size'],
+     simulation_data['wind'], 
+     simulation_data['start_cell'], 
+     simulation_data['slow_simulation'], 
+     simulation_data['run_until']))
+     
+    simulation.start()
+    print("Run done")
+
