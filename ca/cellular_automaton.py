@@ -56,7 +56,7 @@ class CellularAutomaton(ABC):
     Class representing a forest as a grid but stored in 1d array
     """
 
-    def __init__(self, n: int, m: int, env, drone_base_station, wind: tuple[int, int] = (0,0)):
+    def __init__(self, n: int, m: int, env, wind: tuple[int, int] = (0,0)):
         """
 
         """
@@ -67,7 +67,6 @@ class CellularAutomaton(ABC):
         self._step = 0
         self.wind = wind
         self.env = env
-        self.drone_base_station = drone_base_station
 
         self.grid = [CellObject(veg = VegetationType.MED_VEG, fire = 0, wind = wind, hydration = 0, burned = False) 
                                                                         for x in range(0, self.rows * self.cols)]
@@ -122,6 +121,8 @@ class CellularAutomaton(ABC):
             row_values = []
             for cols in range(0, self.cols):
                 cell = self._get(self.cols * row + cols)
+                if row == 3 and cols == 1:
+                    print(cell)
                 if cell.hydration > 0:
                     row_values.append(cell.veg.value)
                 elif cell.burned:
