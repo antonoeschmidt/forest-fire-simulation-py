@@ -166,7 +166,7 @@ class CellularAutomaton(ABC):
         """
         col = index % self.cols
         row = int(index / self.cols)
-        return col, row
+        return row, col
 
     def done(self) -> bool:
         """

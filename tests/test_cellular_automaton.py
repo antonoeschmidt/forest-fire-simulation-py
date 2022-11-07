@@ -1,6 +1,6 @@
 import unittest
 import simpy
-from ca.simple_cell import SimpleCa
+from ca.simpler_cell import SimplerCa
 
 
 class TestStringMethods(unittest.TestCase):
@@ -8,7 +8,7 @@ class TestStringMethods(unittest.TestCase):
     def setUp(self) -> None:
         self.rows = 10
         self.cols = 15
-        self.ca = SimpleCa(self.rows, self.cols, simpy.Environment())
+        self.ca = SimplerCa(self.rows, self.cols, simpy.Environment())
 
     def test_is_burning_four_times(self):
         self.ca.ignite(2, 2)
@@ -40,5 +40,13 @@ class TestStringMethods(unittest.TestCase):
 
     def test_xy(self):
         self.assertEqual(self.ca.xy(0), (0, 0))
-        self.assertEqual(self.ca.xy(10), (10, 0))
-        self.assertEqual(self.ca.xy(self.rows * self.cols - 1), (self.cols - 1, self.rows - 1))
+        self.assertEqual(self.ca.xy(10), (0, 10))
+        self.assertEqual(self.ca.xy(self.rows * self.cols - 1), (self.rows - 1, self.cols - 1))
+
+    def test_not_shifting(self):
+        self.ca.ignite(4, 2)
+
+        for i in range(10):
+            self.ca.step()
+            self.assertTrue(self.ca.get(4, 2).fire > 0)
+            self.assertTrue(1, len([x for x in self.ca.grid if x.fire > 0]))
