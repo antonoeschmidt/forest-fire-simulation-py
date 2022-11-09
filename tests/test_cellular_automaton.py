@@ -14,7 +14,6 @@ class TestStringMethods(unittest.TestCase):
         self.ca.ignite(2, 2)
         self.assertTrue(self.ca.get(2, 2).fire > 0)
 
-
     def test_is_burning(self):
         self.ca.ignite(1, 1)
         self.ca.ignite(2, 2)
@@ -36,9 +35,11 @@ class TestStringMethods(unittest.TestCase):
 
     def test_is_not_burning(self):
         for r in range(0, self.rows):
-            self.assertFalse(self.ca.get(r, c).fire > 0)
+            for c in range(0, self.cols):
+                self.assertFalse(self.ca.get(r, c).fire > 0)
 
     def test_xy(self):
         self.assertEqual(self.ca.xy(0), (0, 0))
         self.assertEqual(self.ca.xy(10), (0, 10))
-        self.assertEqual(self.ca.xy(self.rows * self.cols - 1), (self.rows - 1, self.cols - 1))
+        self.assertEqual(self.ca.xy(self.rows * self.cols - 1),
+                         (self.rows - 1, self.cols - 1))
