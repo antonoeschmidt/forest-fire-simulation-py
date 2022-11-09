@@ -6,6 +6,7 @@ vars:
   PROJECTPYTHON: ".mbse/bin/{{.PYTHON}}"
   PROJECTPIP: ".mbse/bin/{{.PIP}}"
   MBSEENV: ".mbse"
+  PROJECTFLASK: ".mbse/bin/flask"
 
 tasks:
   init:
@@ -36,3 +37,8 @@ tasks:
     desc: Run simulation
     cmds:
       - "{{.PROJECTPYTHON}} simulation.py"
+  
+  flask:
+    desc: Run flask
+    cmds:
+      - "{{.PROJECTFLASK}} run"
