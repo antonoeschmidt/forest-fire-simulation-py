@@ -12,7 +12,8 @@ class TestStringMethods(unittest.TestCase):
 
     def test_is_burning_four_times(self):
         self.ca.ignite(2, 2)
-        self.assertEqual(self.ca.get(2, 2).fire, 1)
+        self.assertTrue(self.ca.get(2, 2).fire > 0)
+
 
     def test_is_burning(self):
         self.ca.ignite(1, 1)
@@ -24,19 +25,18 @@ class TestStringMethods(unittest.TestCase):
         burn_count = 0
         for r in range(0, self.rows):
             for c in range(0, self.cols):
-                if self.ca.get(r, c).fire == 1:
+                if self.ca.get(r, c).fire > 0:
                     burn_count = burn_count + 1
 
         self.assertEqual(expected_burn_count, burn_count)
-        self.assertEqual(self.ca.get(1, 1).fire, 1)
-        self.assertEqual(self.ca.get(2, 2).fire, 1)
-        self.assertEqual(self.ca.get(3, 3).fire, 1)
-        self.assertEqual(self.ca.get(4, 4).fire, 1)
+        self.assertTrue(self.ca.get(1, 1).fire > 0)
+        self.assertTrue(self.ca.get(2, 2).fire > 0)
+        self.assertTrue(self.ca.get(3, 3).fire > 0)
+        self.assertTrue(self.ca.get(4, 4).fire > 0)
 
     def test_is_not_burning(self):
         for r in range(0, self.rows):
-            for c in range(0, self.cols):
-                self.assertNotEqual(self.ca.get(r, c), 1)
+            self.assertFalse(self.ca.get(r, c).fire > 0)
 
     def test_xy(self):
         self.assertEqual(self.ca.xy(0), (0, 0))

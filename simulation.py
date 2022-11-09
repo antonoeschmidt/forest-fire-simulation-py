@@ -11,11 +11,11 @@ from ca.simple_cell import SimpleCa
 simulation_done = threading.local()
 simulation_done.x = False
 
-def fire_progression(env: simpy.core.Environment, forest: CellularAutomaton):
+def fire_progression(env: simpy.core.Environment, forest: CellularAutomaton, grid_size: int):
     while True:
         yield env.timeout(1)
         forest.step()
-        data = {'grid': forest.data(), 'grid_size': 30, 'wind': forest.wind}
+        data = {'grid': forest.data(), 'grid_size': grid_size, 'wind': forest.wind}
         queue.put(data)
 
 def program(grid_size: int = 30, 
@@ -35,7 +35,7 @@ def program(grid_size: int = 30,
     else:
         env = simpy.Environment()
 
-    env.process(fire_progression(env, forest))
+    env.process(fire_progression(env, forest, grid_size))
     env.run(until=run_until)
 
     simulation_done.x = True
