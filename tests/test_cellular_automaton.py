@@ -40,5 +40,6 @@ class TestStringMethods(unittest.TestCase):
 
     def test_xy(self):
         self.assertEqual(self.ca.xy(0), (0, 0))
-        self.assertEqual(self.ca.xy(10), (10, 0))
-        self.assertEqual(self.ca.xy(self.rows * self.cols - 1), (self.cols - 1, self.rows - 1))
+        self.assertEqual(self.ca.xy(10), (0, 10))
+        self.assertEqual(self.ca.xy(self.rows * self.cols - 1),
+                         (self.rows - 1, self.cols - 1))
