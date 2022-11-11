@@ -1,7 +1,6 @@
 from ca.cellular_automaton import CellObject, CellularAutomaton, VegetationType
 from bresenham import bresenham
 import math
-import random
 
 
 class SimpleCa(CellularAutomaton):
@@ -40,11 +39,10 @@ class SimpleCa(CellularAutomaton):
         if original.fire > 0:
             new = new.factory(fire=original.fire + 1)
 
-        if original.burned:
+        if original.burned or original.veg.value in [6, 7]:
             return new
 
-
-        # Determine how long a single cell should burned depending on vegation
+        # Determine how long a single cell should burn depending on vegetation
         if VegetationType.LOW_VEG.value == original.veg and original.fire > 10:
             return new.factory(burned=True, fire_intensity=0)
         elif VegetationType.MED_VEG.value == original.veg and original.fire > 15:
@@ -56,12 +54,11 @@ class SimpleCa(CellularAutomaton):
 
         # Should I burn?
         (x_wind, y_wind) = new.wind
-        if(x== 1, y==1):
-            print(f'wind: {x_wind} and {y_wind}')
-        wind_strength = math.sqrt(x_wind**2 + y_wind**2)
-        wind_strength = wind_strength*3
+
+        wind_strength = math.sqrt(x_wind ** 2 + y_wind ** 2)
+        wind_strength = wind_strength * 3
         if original.fire > 0:
-            # Fire Intensity ==============================================================================================
+            # Fire Intensity ===========================================================================================
             # 🪵 More wood == more fire 🔥
             burn_factor = 0
             if VegetationType.LOW_VEG.value == original.veg:
@@ -73,8 +70,6 @@ class SimpleCa(CellularAutomaton):
             else:
                 pass
 
-            
-
             new = new.factory(fire_intensity=wind_strength + burn_factor)
             return new  # I'm already burning
 
@@ -82,13 +77,13 @@ class SimpleCa(CellularAutomaton):
 
         # gets the list of cells the vector goes through
         # https://en.wikipedia.org/wiki/Bresenham's_line_algorithm
-        cells = list(bresenham(x, y, x-x_wind, y-y_wind))
+        cells = list(bresenham(x, y, x - x_wind, y - y_wind))
 
         # check normal boundaries
         for (x_cell, y_cell) in [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]:
             if self.get(x_cell, y_cell) is not None:
                 summed_intensity = summed_intensity + \
-                    self.get(x_cell, y_cell).fire_intensity
+                                   self.get(x_cell, y_cell).fire_intensity
 
         # check cells in the wind direction
         for cell in cells:
@@ -96,7 +91,7 @@ class SimpleCa(CellularAutomaton):
             if self.get(x_cell, y_cell) is not None:
                 summed_intensity = summed_intensity + self.get(x_cell, y_cell).fire_intensity
 
-        lucky_number = random.randrange(0,100)
+        lucky_number = self.random.randrange(0, 100)
         if summed_intensity > lucky_number:
             new = new.factory(fire=1)
 

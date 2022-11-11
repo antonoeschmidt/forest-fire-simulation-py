@@ -11,6 +11,7 @@ from ca.simple_cell import SimpleCa
 simulation_done = threading.local()
 simulation_done.x = False
 
+
 def fire_progression(env: simpy.core.Environment, forest: CellularAutomaton, grid_size: int):
     while True:
         yield env.timeout(1)
@@ -18,13 +19,14 @@ def fire_progression(env: simpy.core.Environment, forest: CellularAutomaton, gri
         data = {'grid': forest.data(), 'grid_size': grid_size, 'wind': forest.wind}
         queue.put(data)
 
-def program(grid_size: int = 30, 
-            wind: list[int] = [3,1], 
-            start_cell: list[int] = [15,15], 
-            slow_simulation: bool = False, 
-            run_until: int = 10):
 
-    forest = SimpleCa(grid_size, grid_size, (wind[0], wind[1]))
+def program(grid_size: int = 30,
+            wind: list[int] = [3, 1],
+            start_cell: list[int] = [15, 15],
+            slow_simulation: bool = False,
+            run_until: int = 10,
+            seed: int = 1):
+    forest = SimpleCa(grid_size, grid_size, (wind[0], wind[1]), seed)
     forest.ignite(start_cell[0], start_cell[1])
 
     # If we want to slow down the Simulation, use the RealtimeEnvironment
@@ -49,29 +51,33 @@ async def handler(websocket):
         item = queue.get()
         await websocket.send(json.dumps(item))
 
+
 def websocket():
     asyncio.run(websocket1())
+
 
 async def websocket1():
     print("Websocket Started")
     async with websockets.serve(handler, "0.0.0.0", 8000):
         await asyncio.Future()  # run forever
     print("Websocket Finished")
-    
+
+
 def start_websocket():
     global queue
     queue = queue.Queue()
     ws = Thread(target=websocket)
     ws.start()
 
+
 def run(simulation_data):
     print("Started run")
     simulation = Thread(target=program(simulation_data['grid_size'],
-     simulation_data['wind'], 
-     simulation_data['start_cell'], 
-     simulation_data['slow_simulation'], 
-     simulation_data['run_until']))
-     
+                                       simulation_data['wind'],
+                                       simulation_data['start_cell'],
+                                       simulation_data['slow_simulation'],
+                                       simulation_data['run_until'],
+                                       simulation_data['seed']))
+
     simulation.start()
     print("Run done")
-

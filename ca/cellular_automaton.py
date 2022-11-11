@@ -1,7 +1,9 @@
+import random
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from typing import List, Tuple
+
 
 class VegetationType(Enum):
     LOW_VEG = 3
@@ -9,6 +11,8 @@ class VegetationType(Enum):
     HIGH_VEG = 5
     WATER = 6
     ROCK = 7
+
+
 class FrontEndValues(Enum):
     BURNED = 1
     BURNING = 2
@@ -17,6 +21,7 @@ class FrontEndValues(Enum):
     HIGH_VEG = 5
     WATER = 6
     ROCK = 7
+
 
 @dataclass(frozen=True)
 class CellObject:
@@ -32,16 +37,16 @@ class CellObject:
     wind: Tuple[int, int]
     hydration: float
     burned: bool
-    
-    def factory(self, veg: int = None, fire: int = None, fire_intensity: int = None, wind: Tuple[int, int] = None, 
-                                        hydration: float = None, burned: bool = None):
 
-        return CellObject(veg = veg if veg else self.veg,  
-                        fire = fire if fire else self.fire,
-                        fire_intensity = fire_intensity if fire_intensity else self.fire_intensity,
-                        wind = wind if wind else self.wind,
-                        hydration = hydration if hydration else self.hydration,
-                        burned = burned if burned else self.burned)
+    def factory(self, veg: int = None, fire: int = None, fire_intensity: float = None, wind: Tuple[int, int] = None,
+                hydration: float = None, burned: bool = None):
+        return CellObject(veg=veg if veg else self.veg,
+                          fire=fire if fire else self.fire,
+                          fire_intensity=fire_intensity if fire_intensity else self.fire_intensity,
+                          wind=wind if wind else self.wind,
+                          hydration=hydration if hydration else self.hydration,
+                          burned=burned if burned else self.burned)
+
 
 def cell_state_description() -> None:
     """
@@ -57,28 +62,40 @@ class CellularAutomaton(ABC):
     Class representing a forest as a grid but stored in 1d array
     """
 
-    def __init__(self, rows: int, columns: int, wind: tuple[int, int] = (0,0)):
+    def __init__(self, rows: int, columns: int, wind: tuple[int, int] = (0, 0), seed: int = 1):
         """
 
         """
+        self.grid = []
         self.rows = rows
         self.cols = columns
         self._done = False
         self._changed = False
         self._step = 0
         self.wind = wind
+        self.random = random.Random()
+        self.random.seed(seed)
 
-        self.grid = [CellObject(veg=VegetationType.MED_VEG, fire=0, fire_intensity=0, wind=wind, hydration=0, burned=False)
-                     for _ in range(0, self.rows * self.cols)]
+        self.generate_grid()
+
+    def generate_grid(self):
+        for x in range(self.rows * self.cols):
+            self.grid.append(
+                CellObject(veg=VegetationType(self.random.randrange(3, 7)),
+                           fire=0,
+                           fire_intensity=0,
+                           wind=self.wind,
+                           hydration=0,
+                           burned=False))
 
     def ignite(self, x: int, y: int) -> None:
         """
         Changes a given cell state to burning
         """
-        index = self.i(x,y)
+        index = self.i(x, y)
         self.grid[index] = self.grid[index].factory(fire=1)
 
-    def get(self, x: int, y: int) -> CellObject:
+    def get(self, x: int, y: int) -> CellObject | None:
         """
         Get a given cell state.
 
@@ -89,9 +106,9 @@ class CellularAutomaton(ABC):
         if y < 0 or y > self.rows - 1:
             return None
 
-        return self.grid[self.i(x,y)]
+        return self.grid[self.i(x, y)]
 
-    def _get(self, i: int) -> CellObject:
+    def _get(self, i: int) -> CellObject | None:
         """
         Internal getter for 1d index
         """
@@ -160,7 +177,7 @@ class CellularAutomaton(ABC):
         y = int(index / self.cols)
         return x, y
 
-    def i(self, x: int, y:int) -> int:
+    def i(self, x: int, y: int) -> int:
         """Compute index from coordinates
 
         Args:
