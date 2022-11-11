@@ -28,7 +28,11 @@ def data_progression(env: simpy.core.Environment, forest: CellularAutomaton, dro
     while True:
         yield env.timeout(1)
         #TODO -> update model with drone data.
-        data = {'grid': forest.data(), 'grid_size': grid_size, 'wind': forest.wind }
+
+        drone_locations = []
+        for drone in drone_base_station.drones:
+            drone_locations.append(drone.position)
+        data = {'grid': forest.data(), 'grid_size': grid_size, 'wind': forest.wind, 'drones': drone_locations }
         queue.put(data)
 
 
@@ -47,10 +51,11 @@ def program(grid_size: int = 30,
         env = simpy.Environment()
 
     forest = SimpleCa(grid_size, grid_size, (wind[0], wind[1]))
-    forest.ignite(start_cell[0], start_cell[1])    
+    forest.ignite(start_cell[0], start_cell[1])
+    forest.ignite(20, 5)    
     base_station_location = (28,28)
     drones = []
-    for i in range(5):
+    for i in range(1):
         drones.append(drone(50, base_station_location, env))
     #drones = [drone(50, base_station_location, env), drone(50, base_station_location, env), drone(50, base_station_location, env)]
     drone_base_station = base_station(drones, base_station_location, forest) 

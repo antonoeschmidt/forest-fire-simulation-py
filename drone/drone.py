@@ -6,7 +6,7 @@ class drone():
     
     def __init__(self, capacity: int, base_station_location: Tuple[int, int], env):
         self.env = env
-        self.speed = 100 # squares a tick
+        self.speed = 5 # squares a tick
         self.capacity = capacity # liters of water
         self.recharge_time = 0
         self.range = 999999999
