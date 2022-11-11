@@ -52,7 +52,6 @@ def program(grid_size: int = 30,
 
     forest = SimpleCa(grid_size, grid_size, (wind[0], wind[1]))
     forest.ignite(start_cell[0], start_cell[1])
-    forest.ignite(20, 5)    
     base_station_location = (28,28)
     drones = []
     for i in range(1):

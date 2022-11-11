@@ -19,19 +19,19 @@ class FrontEndValues(Enum):
     WATER = 6
     ROCK = 7
 
-@dataclass(frozen=False)
+@dataclass(frozen=True)
 class CellObject:
     """
     Veg (vegetation type): integer = matching the Enum of CellState
     Fire: integer = counts how many ticks the cell has been burning for
     Wind: Tuple(int,int) = vector determining the wind for that cell
-    Hydration: int = a percentage of hydration
+    Hydration: float = a percentage of hydration
     """
     veg: VegetationType
     fire: int
     fire_intensity: int
     wind: Tuple[int, int]
-    hydration: int
+    hydration: float
     burned: bool
     
     def factory(self, veg: int = None, fire: int = None, fire_intensity: int = None, wind: Tuple[int, int] = None, 
@@ -58,7 +58,7 @@ class CellularAutomaton(ABC):
     Class representing a forest as a grid but stored in 1d array
     """
 
-    def __init__(self, n: int, m: int, env, wind: tuple[int, int] = (0,0)):
+    def __init__(self, n: int, m: int, wind: tuple[int, int] = (0,0)):
         """
 
         """
@@ -68,7 +68,6 @@ class CellularAutomaton(ABC):
         self._changed = False
         self._step = 0
         self.wind = wind
-        self.env = env
 
         self.grid = [CellObject(veg=VegetationType.MED_VEG, fire=0, fire_intensity=0, wind=wind, hydration=0, burned=False)
                      for _ in range(0, self.rows * self.cols)]
@@ -110,7 +109,7 @@ class CellularAutomaton(ABC):
         """
         for row in range(0, self.rows):
             for cols in range(0, self.cols):
-                print(f"{self._get(self.cols * row + cols).hydration} ", end='')
+                print(f"{self._get(self.cols * row + cols).value} ", end='')
             print()
         print()
 
@@ -123,13 +122,8 @@ class CellularAutomaton(ABC):
             row_values = []
             for cols in range(0, self.cols):
                 cell = self._get(self.cols * row + cols)
-                if row == 3 and cols == 1:
-                    print(cell)
-                if cell.hydration > 0:
-                    row_values.append(cell.veg.value)
-                elif cell.burned:
+                if cell.burned:
                     row_values.append(FrontEndValues.BURNED.value)
-                
                 elif cell.fire > 0:
                     row_values.append(FrontEndValues.BURNING.value)
                 else:
@@ -150,7 +144,7 @@ class CellularAutomaton(ABC):
         self.grid = new_grid
 
         self._done = not self._changed
-
+    
     def run(self, do_print: bool) -> None:
         """
         Print and Step until Done

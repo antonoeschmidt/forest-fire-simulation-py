@@ -40,10 +40,6 @@ class SimpleCa(CellularAutomaton):
         if original.fire > 0:
             new = new.factory(fire=original.fire + 1)
 
-        # if original.hydration > 1:
-        #     new = original.factory() #hydration = original.hydration - 1
-        #     #print("cell", new.fire, new.hydration)
-
         if original.burned:
             return new
 
