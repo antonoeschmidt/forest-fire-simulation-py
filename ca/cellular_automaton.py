@@ -57,12 +57,12 @@ class CellularAutomaton(ABC):
     Class representing a forest as a grid but stored in 1d array
     """
 
-    def __init__(self, n: int, m: int, wind: tuple[int, int] = (0,0)):
+    def __init__(self, rows: int, columns: int, wind: tuple[int, int] = (0,0)):
         """
 
         """
-        self.rows = n
-        self.cols = m
+        self.rows = rows
+        self.cols = columns
         self._done = False
         self._changed = False
         self._step = 0
@@ -75,7 +75,7 @@ class CellularAutomaton(ABC):
         """
         Changes a given cell state to burning
         """
-        index = self.cols * y + x
+        index = self.i(x,y)
         self.grid[index] = self.grid[index].factory(fire=1)
 
     def get(self, x: int, y: int) -> CellObject:
@@ -84,13 +84,12 @@ class CellularAutomaton(ABC):
 
         Compute the 1d array index from x and y
         """
-        if x < 0 or x > self.rows - 1:
+        if x < 0 or x > self.cols - 1:
             return None
-        if y < 0 or y > self.cols - 1:
+        if y < 0 or y > self.rows - 1:
             return None
 
-        index = y * self.cols + x
-        return self.grid[index]
+        return self.grid[self.i(x,y)]
 
     def _get(self, i: int) -> CellObject:
         """
@@ -106,7 +105,7 @@ class CellularAutomaton(ABC):
         """
         for row in range(0, self.rows):
             for cols in range(0, self.cols):
-                print(f"{self._get(self.cols * row + cols).value} ", end='')
+                print(f"{self.get(row, cols).value} ", end='')
             print()
         print()
 
@@ -115,10 +114,10 @@ class CellularAutomaton(ABC):
         Return a 2d representation of the forest
         """
         data = []
-        for row in range(0, self.rows):
+        for y in range(0, self.rows):
             row_values = []
-            for cols in range(0, self.cols):
-                cell = self._get(self.cols * row + cols)
+            for x in range(0, self.cols):
+                cell = self.get(x, y)
                 if cell.burned:
                     row_values.append(FrontEndValues.BURNED.value)
                 elif cell.fire > 0:
@@ -157,9 +156,21 @@ class CellularAutomaton(ABC):
         """
         Convert index to (x,y) coordinate
         """
-        col = index % self.cols
-        row = int(index / self.cols)
-        return col, row
+        x = index % self.cols
+        y = int(index / self.cols)
+        return x, y
+
+    def i(self, x: int, y:int) -> int:
+        """Compute index from coordinates
+
+        Args:
+            x (int): x-coordinate
+            y (int): y-coordinate
+
+        Returns:
+            int: index
+        """
+        return x + y * self.cols
 
     def done(self) -> bool:
         """
