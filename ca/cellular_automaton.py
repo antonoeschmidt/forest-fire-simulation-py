@@ -29,15 +29,17 @@ class CellObject:
     """
     veg: VegetationType
     fire: int
+    fire_intensity: int
     wind: Tuple[int, int]
     hydration: int
     burned: bool
     
-    def factory(self, veg: int = None, fire: int = None, wind: Tuple[int, int] = None, 
-                                        hydration: int = None, burned: bool = None):
+    def factory(self, veg: int = None, fire: int = None, fire_intensity: int = None, wind: Tuple[int, int] = None, 
+                                        hydration: float = None, burned: bool = None):
 
         return CellObject(veg = veg if veg else self.veg,  
                         fire = fire if fire else self.fire,
+                        fire_intensity = fire_intensity if fire_intensity else self.fire_intensity,
                         wind = wind if wind else self.wind,
                         hydration = hydration if hydration else self.hydration,
                         burned = burned if burned else self.burned)
@@ -68,8 +70,8 @@ class CellularAutomaton(ABC):
         self.wind = wind
         self.env = env
 
-        self.grid = [CellObject(veg = VegetationType.MED_VEG, fire = 0, wind = wind, hydration = 0, burned = False) 
-                                                                        for x in range(0, self.rows * self.cols)]
+        self.grid = [CellObject(veg=VegetationType.MED_VEG, fire=0, fire_intensity=0, wind=wind, hydration=0, burned=False)
+                     for _ in range(0, self.rows * self.cols)]
 
     
 

@@ -41,12 +41,5 @@ class TestStringMethods(unittest.TestCase):
     def test_xy(self):
         self.assertEqual(self.ca.xy(0), (0, 0))
         self.assertEqual(self.ca.xy(10), (0, 10))
-        self.assertEqual(self.ca.xy(self.rows * self.cols - 1), (self.rows - 1, self.cols - 1))
-
-    def test_not_shifting(self):
-        self.ca.ignite(4, 2)
-
-        for i in range(10):
-            self.ca.step()
-            self.assertTrue(self.ca.get(4, 2).fire > 0)
-            self.assertTrue(1, len([x for x in self.ca.grid if x.fire > 0]))
+        self.assertEqual(self.ca.xy(self.rows * self.cols - 1),
+                         (self.rows - 1, self.cols - 1))
