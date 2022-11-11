@@ -1,7 +1,5 @@
 import unittest
-
 from ca.simple_cell import SimpleCa
-
 
 class TestStringMethods(unittest.TestCase):
 

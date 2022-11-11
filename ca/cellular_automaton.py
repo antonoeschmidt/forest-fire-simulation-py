@@ -71,6 +71,8 @@ class CellularAutomaton(ABC):
         self.grid = [CellObject(veg=VegetationType.MED_VEG, fire=0, fire_intensity=0, wind=wind, hydration=0, burned=False)
                      for _ in range(0, self.rows * self.cols)]
 
+    
+
     def ignite(self, x: int, y: int) -> None:
         """
         Changes a given cell state to burning
@@ -141,7 +143,7 @@ class CellularAutomaton(ABC):
         self.grid = new_grid
 
         self._done = not self._changed
-
+    
     def run(self, do_print: bool) -> None:
         """
         Print and Step until Done
