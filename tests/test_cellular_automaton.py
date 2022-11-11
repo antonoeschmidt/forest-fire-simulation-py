@@ -1,5 +1,4 @@
 import unittest
-import simpy
 from ca.simple_cell import SimpleCa
 
 class TestStringMethods(unittest.TestCase):

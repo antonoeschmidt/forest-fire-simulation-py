@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from typing import List, Tuple
-from ca.callbacks import fire_callback
 
 class VegetationType(Enum):
     LOW_VEG = 3
