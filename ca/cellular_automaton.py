@@ -75,7 +75,7 @@ class CellularAutomaton(ABC):
         """
         Changes a given cell state to burning
         """
-        index = self.cols * x + y
+        index = self.cols * y + x
         self.grid[index] = self.grid[index].factory(fire=1)
 
     def get(self, x: int, y: int) -> CellObject:
@@ -89,7 +89,7 @@ class CellularAutomaton(ABC):
         if y < 0 or y > self.cols - 1:
             return None
 
-        index = x * self.cols + y
+        index = y * self.cols + x
         return self.grid[index]
 
     def _get(self, i: int) -> CellObject:
@@ -159,7 +159,7 @@ class CellularAutomaton(ABC):
         """
         col = index % self.cols
         row = int(index / self.cols)
-        return row, col
+        return col, row
 
     def done(self) -> bool:
         """

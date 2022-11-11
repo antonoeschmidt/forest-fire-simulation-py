@@ -43,8 +43,6 @@ class SimpleCa(CellularAutomaton):
         if original.burned:
             return new
 
-        if original.fire > 10:
-            return new.factory(burned=True, fire_intensity=0)
 
         # Determine how long a single cell should burned depending on vegation
         if VegetationType.LOW_VEG.value == original.veg and original.fire > 10:
@@ -58,6 +56,8 @@ class SimpleCa(CellularAutomaton):
 
         # Should I burn?
         (x_wind, y_wind) = new.wind
+        if(x== 1, y==1):
+            print(f'wind: {x_wind} and {y_wind}')
         wind_strength = math.sqrt(x_wind**2 + y_wind**2)
         wind_strength = wind_strength*3
         if original.fire > 0:
@@ -94,7 +94,7 @@ class SimpleCa(CellularAutomaton):
         for cell in cells:
             (x_cell, y_cell) = cell
             if self.get(x_cell, y_cell) is not None:
-                summed_intensity = summed_intensity + self.get(x, y).fire_intensity
+                summed_intensity = summed_intensity + self.get(x_cell, y_cell).fire_intensity
 
         lucky_number = random.randrange(0,100)
         if summed_intensity > lucky_number:
