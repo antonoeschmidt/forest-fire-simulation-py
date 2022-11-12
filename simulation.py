@@ -3,6 +3,7 @@ import json
 import queue
 from threading import Thread
 import threading
+from typing import List
 import simpy
 import websockets
 from ca.cellular_automaton import CellularAutomaton
@@ -15,7 +16,7 @@ def fire_progression(env: simpy.core.Environment, forest: CellularAutomaton, gri
     while True:
         yield env.timeout(1)
         forest.step()
-        data = {'grid': forest.data(), 'grid_size': grid_size, 'wind': forest.wind}
+        data = {'grid': forest.data(), 'grid_size': grid_size, 'wind': forest.wind, 'stats': {'x': forest.stats.x, 'y': forest.stats.y}}
         queue.put(data)
 
 def program(grid_size: int = 30, 
@@ -23,7 +24,7 @@ def program(grid_size: int = 30,
             start_cell: list[int] = [15,15], 
             slow_simulation: bool = False, 
             run_until: int = 10):
-
+    print(f"grid_size: {grid_size}, slow_sim: {slow_simulation}")
     forest = SimpleCa(grid_size, grid_size, (wind[0], wind[1]))
     forest.ignite(start_cell[0], start_cell[1])
 
@@ -74,4 +75,3 @@ def run(simulation_data):
      
     simulation.start()
     print("Run done")
-
