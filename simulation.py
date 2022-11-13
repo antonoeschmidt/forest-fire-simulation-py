@@ -50,8 +50,6 @@ def program(grid_size: int = 30,
             seed: int = 1):
             
     print(f"grid_size: {grid_size}, slow_sim: {slow_simulation}")
-    forest = SimpleCa(grid_size, grid_size, (wind[0], wind[1]))
-    forest.ignite(start_cell[0], start_cell[1])
 
     # If we want to slow down the Simulation, use the RealtimeEnvironment
     # https://simpy.readthedocs.io/en/latest/topical_guides/real-time-simulations.html
