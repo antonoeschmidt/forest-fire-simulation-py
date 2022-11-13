@@ -66,7 +66,7 @@ class CellularAutomaton(ABC):
         """
 
         """
-        self.grid = []
+        self.grid: List[CellObject] = []
         self.rows = rows
         self.cols = columns
         self._done = False
@@ -190,6 +190,17 @@ class CellularAutomaton(ABC):
             int: index
         """
         return x + y * self.cols
+
+    def drop_water(self, x: int, y: int, amount: float) -> None:
+        """Add hydration to cell
+
+        @param x: coordinate
+        @param y: coordinate
+        @param amount: amount
+        @return: None
+        """
+        index = self.i(x, y)
+        self.grid[index] = self.grid[index].factory(hydration=amount, fire_intensity=0, burned=True)
 
     def done(self) -> bool:
         """

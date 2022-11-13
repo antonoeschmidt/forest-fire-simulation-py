@@ -93,7 +93,7 @@ class SimpleCa(CellularAutomaton):
 
         lucky_number = self.random.randrange(0, 100)
         if summed_intensity > lucky_number:
-            new = new.factory(fire=1)
+            new = new.factory(fire=1, hydration=0)
 
         return new
 

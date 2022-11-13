@@ -3,20 +3,20 @@ import json
 import queue
 from typing import Tuple
 
-from drone.drone import drone
-from drone.base_station import base_station
+from drone.drone import Drone
 from threading import Thread
 import threading
 import simpy
 import websockets
 from ca.cellular_automaton import CellularAutomaton
 from ca.simple_cell import SimpleCa
+from drone.fire_drone_manager import DroneController, Coordinate
 
 simulation_done = threading.local()
 simulation_done.x = False
 
 
-def drone_progression(env: simpy.core.Environment, drone_base_station):
+def drone_progression(env: simpy.core.Environment, drone_base_station: DroneController):
     while True:
         yield env.timeout(1)
         drone_base_station.step()
@@ -28,7 +28,7 @@ def fire_progression(env: simpy.core.Environment, forest: CellularAutomaton):
         forest.step()
 
 
-def data_progression(env: simpy.core.Environment, forest: CellularAutomaton, drone_base_station: base_station,
+def data_progression(env: simpy.core.Environment, forest: CellularAutomaton, drone_base_station: DroneController,
                      grid_size):
     while True:
         yield env.timeout(1)
@@ -36,7 +36,7 @@ def data_progression(env: simpy.core.Environment, forest: CellularAutomaton, dro
 
         drone_locations = []
         for drone in drone_base_station.drones:
-            drone_locations.append(drone.position)
+            drone_locations.append((drone.position.x, drone.position.y))
         data = {'grid': forest.data(), 'grid_size': grid_size, 'wind': forest.wind, 'drones': drone_locations}
         queue.put(data)
 
@@ -61,9 +61,10 @@ def program(grid_size: int = 30,
     base_station_location = (28, 28)
     drones = []
     for i in range(1):
-        drones.append(drone(50, base_station_location, env))
-    # drones = [drone(50, base_station_location, env), drone(50, base_station_location, env), drone(50, base_station_location, env)]
-    drone_base_station = base_station(drones, base_station_location, forest)
+        drones.append(Drone(50, base_station_location, env))
+
+    # drone_base_station = BaseStation(drones, base_station_location, forest)
+    drone_base_station = DroneController(20, forest, 5, Coordinate(2, 2))
 
     env.process(fire_progression(env, forest))
     env.process(drone_progression(env, drone_base_station))
