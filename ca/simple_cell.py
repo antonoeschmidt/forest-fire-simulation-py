@@ -1,7 +1,6 @@
 from ca.cellular_automaton import CellObject, CellularAutomaton, VegetationType
 from bresenham import bresenham
 import math
-import random
 
 
 class SimpleCa(CellularAutomaton):
@@ -40,10 +39,10 @@ class SimpleCa(CellularAutomaton):
         if original.fire > 0:
             new = new.factory(fire=original.fire + 1)
 
-        if original.burned:
+        if original.burned or original.veg.value in [6, 7]:
             return new
 
-        # Determine how long a single cell should burned depending on vegation
+        # Determine how long a single cell should burn depending on vegetation
         if VegetationType.LOW_VEG.value == original.veg and original.fire > 10:
             return new.factory(burned=True, fire_intensity=0)
         elif VegetationType.MED_VEG.value == original.veg and original.fire > 15:
@@ -92,7 +91,7 @@ class SimpleCa(CellularAutomaton):
             if self.get(x_cell, y_cell) is not None:
                 summed_intensity = summed_intensity + self.get(x_cell, y_cell).fire_intensity
 
-        lucky_number = random.randrange(0, 100)
+        lucky_number = self.random.randrange(0, 100)
         if summed_intensity > lucky_number:
             new = new.factory(fire=1)
 
