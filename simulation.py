@@ -44,7 +44,8 @@ def program(grid_size: int = 30,
             wind: list[int] = [3,1], 
             start_cell: list[int] = [15,15], 
             slow_simulation: bool = False, 
-            run_until: int = 10):
+            run_until: int = 10,
+            seed: int = 1):
             
     print(f"grid_size: {grid_size}, slow_sim: {slow_simulation}")
     forest = SimpleCa(grid_size, grid_size, (wind[0], wind[1]))
