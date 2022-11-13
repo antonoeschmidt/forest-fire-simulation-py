@@ -36,8 +36,6 @@ class TestStringMethods(unittest.TestCase):
     def test_is_not_burning(self):
         for r in range(0, self.cols):
             for c in range(0, self.rows):
-                # print(self.ca.get(r,c))
-                print(f'{self.ca.i(r, c)} : {r}, {c}')
                 self.assertFalse(self.ca.get(r, c).fire > 0)
 
     def test_xy(self):
