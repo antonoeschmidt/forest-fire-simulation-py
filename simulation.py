@@ -7,6 +7,7 @@ from drone.drone import drone
 from drone.base_station import base_station
 from threading import Thread
 import threading
+from typing import List
 import simpy
 import websockets
 from ca.cellular_automaton import CellularAutomaton
@@ -37,7 +38,7 @@ def data_progression(env: simpy.core.Environment, forest: CellularAutomaton, dro
         drone_locations = []
         for drone in drone_base_station.drones:
             drone_locations.append(drone.position)
-        data = {'grid': forest.data(), 'grid_size': grid_size, 'wind': forest.wind, 'drones': drone_locations}
+        data = {'grid': forest.data(), 'grid_size': grid_size, 'wind': forest.wind, 'drones': drone_locations , 'stats': {'x': forest.stats.x, 'y': forest.stats.y}}
         queue.put(data)
 
 
@@ -47,6 +48,11 @@ def program(grid_size: int = 30,
             slow_simulation: bool = False,
             run_until: int = 10,
             seed: int = 1):
+            
+    print(f"grid_size: {grid_size}, slow_sim: {slow_simulation}")
+    forest = SimpleCa(grid_size, grid_size, (wind[0], wind[1]))
+    forest.ignite(start_cell[0], start_cell[1])
+
     # If we want to slow down the Simulation, use the RealtimeEnvironment
     # https://simpy.readthedocs.io/en/latest/topical_guides/real-time-simulations.html
 
