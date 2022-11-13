@@ -1,6 +1,8 @@
 import asyncio
 import json
 import queue
+from typing import Tuple
+
 from drone.drone import drone
 from drone.base_station import base_station
 from threading import Thread
@@ -20,7 +22,7 @@ def drone_progression(env: simpy.core.Environment, drone_base_station):
         drone_base_station.step()
 
 
-def fire_progression(env: simpy.core.Environment, forest: CellularAutomaton, grid_size: int):
+def fire_progression(env: simpy.core.Environment, forest: CellularAutomaton):
     while True:
         yield env.timeout(1)
         forest.step()
@@ -41,7 +43,7 @@ def data_progression(env: simpy.core.Environment, forest: CellularAutomaton, dro
 
 def program(grid_size: int = 30,
             wind: list[int] = [3, 1],
-            start_cell: list[int] = [15, 15],
+            ignition_points: list[Tuple[int, int]] = None,
             slow_simulation: bool = False,
             run_until: int = 10,
             seed: int = 1):
@@ -54,7 +56,8 @@ def program(grid_size: int = 30,
         env = simpy.Environment()
 
     forest = SimpleCa(grid_size, grid_size, (wind[0], wind[1]), seed)
-    forest.ignite(start_cell[0], start_cell[1])
+    for ignition_point in ignition_points:
+        forest.ignite(ignition_point[1], ignition_point[0])
     base_station_location = (28, 28)
     drones = []
     for i in range(1):
@@ -97,6 +100,18 @@ def start_websocket():
     queue = queue.Queue()
     ws = Thread(target=websocket)
     ws.start()
+
+
+def grid(simulation_data):
+    grid_size = simulation_data['grid_size']
+    wind = simulation_data['wind']
+    seed = simulation_data['seed']
+
+    forest = SimpleCa(grid_size, grid_size, (wind[0], wind[1]), seed)
+
+    data = {'grid': forest.data(), 'grid_size': grid_size, 'wind': forest.wind, 'drones': []}
+
+    return data
 
 
 def run(simulation_data):
