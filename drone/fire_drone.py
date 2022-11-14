@@ -1,6 +1,6 @@
 import math
 
-from drone.fire_drone_manager import Coordinate, DroneState
+from drone.fire_drone_controller import Coordinate, DroneState
 
 
 class FireDrone(object):
@@ -38,18 +38,21 @@ class FireDrone(object):
 
         self.position = Coordinate(int(x), int(y))
 
+    def rounds_to_target(self) -> int:
+        """Compute the number of rounds needed for this drone to reach its target
+
+        @return: Rounds to target (int): Returns -1 if no location or target is present
+        """
+        if self.position is None or self.target is None:
+            return -1
+
+        distance_to_target = math.sqrt(
+            abs(self.position.x - self.target.x) ** 2 + abs(self.position.y - self.target.y) ** 2)
+        return int(distance_to_target / self.speed)
+
     def reached_target(self) -> bool:
         """Has the target been reached?
 
         @return: True if target is reached o.w. False
         """
-        if self.position is None or self.target is None:
-            return False
-
-        distance_to_target = math.sqrt(
-            abs(self.position.x - self.target.x) ** 2 + abs(self.position.y - self.target.y) ** 2)
-
-        if distance_to_target < self.speed:
-            return True
-        else:
-            return False
+        return self.rounds_to_target() == 0

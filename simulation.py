@@ -3,14 +3,14 @@ import json
 import queue
 from typing import Tuple
 
-from drone.drone import Drone
+from drone.drone import drone
 from threading import Thread
 import threading
 import simpy
 import websockets
 from ca.cellular_automaton import CellularAutomaton
 from ca.simple_cell import SimpleCa
-from drone.fire_drone_manager import DroneController, Coordinate
+from drone.fire_drone_controller import DroneController, Coordinate
 
 simulation_done = threading.local()
 simulation_done.x = False
@@ -60,11 +60,11 @@ def program(grid_size: int = 30,
         forest.ignite(ignition_point[1], ignition_point[0])
     base_station_location = (28, 28)
     drones = []
-    for i in range(1):
-        drones.append(Drone(50, base_station_location, env))
+    # for i in range(1):
+        # drones.append(Drone(50, base_station_location, env))
 
     # drone_base_station = BaseStation(drones, base_station_location, forest)
-    drone_base_station = DroneController(20, forest, 5, Coordinate(2, 2))
+    drone_base_station = DroneController(20, forest, 5, Coordinate(2, 3))
 
     env.process(fire_progression(env, forest))
     env.process(drone_progression(env, drone_base_station))
