@@ -56,6 +56,18 @@ def cell_state_description() -> None:
         print(f"{name}: {value.value}", end='; ')
     print()
 
+class Stats():
+    def __init__(self, n, m) -> None:
+        self.x = []
+        self.y = []
+        self.burned_cells = 0
+        self.total_cells = n * m
+    
+    def add_stat(self, time):
+        self.x.append(time)
+        self.y.append(self.burned_cells / self.total_cells)
+        if self.burned_cells / self.total_cells > 1:
+            print(self.burned_cells, "/" ,self.total_cells)
 
 class CellularAutomaton(ABC):
     """
@@ -73,10 +85,11 @@ class CellularAutomaton(ABC):
         self._changed = False
         self._step = 0
         self.wind = wind
+        self.stats = Stats(rows, columns)
         self.random = random.Random()
         self.random.seed(seed)
-
         self.generate_grid()
+
 
     def generate_grid(self):
         for x in range(self.rows * self.cols):
@@ -153,10 +166,12 @@ class CellularAutomaton(ABC):
         """
         self._changed = False
         self._step = self._step + 1
-        new_grid = [self.rule(self.xy(i)) for i, c in enumerate(self.grid)]
+        new_grid = [self.do_rule(self.xy(i)) for i, c in enumerate(self.grid)]
         self.grid = new_grid
 
         self._done = not self._changed
+
+        self.stats.add_stat(self._step)
 
     def run(self, do_print: bool) -> None:
         """
@@ -210,9 +225,19 @@ class CellularAutomaton(ABC):
         """
         return self._done
 
+    def do_rule(self, xy: Tuple[int, int]):
+        (x, y) = xy
+        old = self.get(x, y)
+        result = self.rule(xy)
+        
+        if result.fire > 0 and old.fire == 0:
+            self.stats.burned_cells += 1
+        
+        return result 
+
     @classmethod
     @abstractmethod
-    def rule(cls, xy: Tuple[int, int]):
+    def rule(cls, xy: Tuple[int, int]) -> CellObject:
         """
         Override
         """
