@@ -65,17 +65,8 @@ class DroneController(object):
                 continue
 
             if not drone.reached_target():
-                # if drone.rounds_to_target() == 1:
-                #     # Re-target to closest and most recent fire?
-                #     pass
-                #     designated_fire: FireInformation = fires[0]
-                #
-                #     for f in fires:
-                #         d = drone.position.distance(f.location)
-                #         if d < 1 and f.fire < designated_fire.fire:
-                #             designated_fire = f
-                #
-                #     self.assign_fire_to_drone(drone, designated_fire)
+                self.reassign_target(drone, fires)
+
                 drone.advance()
                 continue
 
@@ -91,21 +82,40 @@ class DroneController(object):
                     drone.state = DroneState.IDLE
 
             elif DroneState.FIRE_FIGHTING == drone.state:
+                self.reassign_target(drone, fires)
+                if drone.target.distance(drone.position) > drone.speed:
+                    # not yet reached target
+                    continue
+
                 self.forest.drop_water(drone.target.x, drone.target.y, 100)
                 self.targets.remove(drone.target)
 
                 drone.state = DroneState.REFILLING
                 drone.set_target(Coordinate(self.location.x, self.location.y))
 
+    def reassign_target(self, drone, fires):
+        """Reassigns target if already handled
+        """
+        d_target = drone.target
+        if self.forest.get(d_target.x, d_target.y).burned:
+            designated_fire: FireInformation = fires[0]
+
+            for f in fires:
+                d = drone.position.distance(f.location)
+                if d < 1 and f.fire < designated_fire.fire:
+                    designated_fire = f
+
+            self.assign_fire_to_drone(drone, designated_fire)
+
     def assign_fire_to_drone(self, drone: FireDrone, targeted_fire: FireInformation) -> None:
         """
         """
         if drone.target in self.targets:
-            self.targets.remove(targeted_fire.location)
+            self.targets.remove(drone.target)
 
         drone.state = DroneState.FIRE_FIGHTING
         drone.set_target(targeted_fire.location)
-        self.targets.append(targeted_fire.location)
+        self.targets.append(Coordinate(targeted_fire.location.x, targeted_fire.location.y))
 
     def find_fires(self) -> List[FireInformation]:
         """Find list of fires - the order of importance (FIFO)
