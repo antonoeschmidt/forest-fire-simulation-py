@@ -43,11 +43,11 @@ class SimpleCa(CellularAutomaton):
             return new
 
         # Determine how long a single cell should burn depending on vegetation
-        if VegetationType.LOW_VEG.value == original.veg and original.fire > 10:
+        if VegetationType.LOW_VEG == original.veg and original.fire > 10:
             return new.factory(burned=True, fire_intensity=0)
-        elif VegetationType.MED_VEG.value == original.veg and original.fire > 15:
+        elif VegetationType.MED_VEG == original.veg and original.fire > 15:
             return new.factory(burned=True, fire_intensity=0)
-        elif VegetationType.HIGH_VEG.value == original.veg and original.fire > 20:
+        elif VegetationType.HIGH_VEG == original.veg and original.fire > 20:
             return new.factory(burned=True, fire_intensity=0)
         else:
             pass
@@ -57,15 +57,15 @@ class SimpleCa(CellularAutomaton):
 
         wind_strength = math.sqrt(x_wind ** 2 + y_wind ** 2)
         wind_strength = wind_strength * 3
-        if original.fire > 0:
+        if original.fire > 3:
             # Fire Intensity ===========================================================================================
             # 🪵 More wood == more fire 🔥
             burn_factor = 0
-            if VegetationType.LOW_VEG.value == original.veg:
+            if VegetationType.LOW_VEG == original.veg:
                 burn_factor = 5
-            elif VegetationType.MED_VEG.value == original.veg:
+            elif VegetationType.MED_VEG == original.veg:
                 burn_factor = 15
-            elif VegetationType.HIGH_VEG.value == original.veg:
+            elif VegetationType.HIGH_VEG == original.veg:
                 burn_factor = 20
             else:
                 pass

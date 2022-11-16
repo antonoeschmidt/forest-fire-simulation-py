@@ -40,10 +40,6 @@ class FireDrone(object):
         x = abs(self.position.x + xp * (self.speed / d))
         y = abs(self.position.y + yp * (self.speed / d))
 
-        print()
-        print(f'Drone location: ({int(x)}, {int(y)})')
-        print(f'Drone target  : ({self.target.x}, {self.target.y})')
-
         self.position = Coordinate(int(x), int(y))
 
     def rounds_to_target(self) -> int:

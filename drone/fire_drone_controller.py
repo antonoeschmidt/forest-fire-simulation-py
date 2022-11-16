@@ -97,12 +97,11 @@ class DroneController(object):
         """Reassigns target if already handled
         """
         d_target = drone.target
-        if self.forest.get(d_target.x, d_target.y).burned:
+        if self.forest.get(d_target.x, d_target.y).burned and len(fires) > 0:
             designated_fire: FireInformation = fires[0]
 
             for f in fires:
-                d = drone.position.distance(f.location)
-                if d < 1 and f.fire < designated_fire.fire:
+                if f.fire < designated_fire.fire and 4 > f.location.distance(designated_fire.location):
                     designated_fire = f
 
             self.assign_fire_to_drone(drone, designated_fire)
