@@ -62,11 +62,11 @@ class SimpleCa(CellularAutomaton):
             # 🪵 More wood == more fire 🔥
             burn_factor = 0
             if VegetationType.LOW_VEG.value == original.veg:
-                burn_factor = 10
+                burn_factor = 5
             elif VegetationType.MED_VEG.value == original.veg:
-                burn_factor = 20
+                burn_factor = 15
             elif VegetationType.HIGH_VEG.value == original.veg:
-                burn_factor = 30
+                burn_factor = 20
             else:
                 pass
 
@@ -82,14 +82,16 @@ class SimpleCa(CellularAutomaton):
         # check normal boundaries
         for (x_cell, y_cell) in [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]:
             if self.get(x_cell, y_cell) is not None:
-                summed_intensity = summed_intensity + \
-                                   self.get(x_cell, y_cell).fire_intensity
+                if not self.get(x_cell, y_cell).burned:
+                    summed_intensity = summed_intensity + \
+                                       self.get(x_cell, y_cell).fire_intensity
 
         # check cells in the wind direction
         for cell in cells:
             (x_cell, y_cell) = cell
             if self.get(x_cell, y_cell) is not None:
-                summed_intensity = summed_intensity + self.get(x_cell, y_cell).fire_intensity
+                if not self.get(x_cell, y_cell).burned:
+                    summed_intensity = summed_intensity + self.get(x_cell, y_cell).fire_intensity
 
         lucky_number = self.random.randrange(0, 100)
         if summed_intensity > lucky_number:

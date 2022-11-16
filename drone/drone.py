@@ -2,7 +2,7 @@ import math
 from typing import Tuple
 
 # The drone class doesn't contain a lot of info. It has some basic methods but nothing too fancy.
-class drone():
+class Drone():
     
     def __init__(self, capacity: int, base_station_location: Tuple[int, int], env):
         self.env = env

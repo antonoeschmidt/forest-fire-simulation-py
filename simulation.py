@@ -3,7 +3,6 @@ import json
 import queue
 from typing import Tuple
 
-from drone.drone import drone
 from threading import Thread
 import threading
 import simpy
@@ -36,7 +35,7 @@ def data_progression(env: simpy.core.Environment, forest: CellularAutomaton, dro
 
         drone_locations = []
         for drone in drone_base_station.drones:
-            drone_locations.append((drone.position.x, drone.position.y))
+            drone_locations.append((drone.position.y, drone.position.x))
         data = {'grid': forest.data(), 'grid_size': grid_size, 'wind': forest.wind, 'drones': drone_locations}
         queue.put(data)
 

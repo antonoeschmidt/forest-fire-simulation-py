@@ -31,10 +31,18 @@ class FireDrone(object):
         # distance_to_target
         d = math.sqrt(abs(self.position.x - self.target.x) ** 2 + abs(self.position.y - self.target.y) ** 2)
 
+        if d < self.speed:
+            self.set_location(self.target)
+            return
+
         (xp, yp) = (self.target.x - self.position.x, self.target.y - self.position.y)
 
         x = abs(self.position.x + xp * (self.speed / d))
         y = abs(self.position.y + yp * (self.speed / d))
+
+        print()
+        print(f'Drone location: ({int(x)}, {int(y)})')
+        print(f'Drone target  : ({self.target.x}, {self.target.y})')
 
         self.position = Coordinate(int(x), int(y))
 

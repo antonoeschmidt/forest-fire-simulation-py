@@ -88,8 +88,6 @@ class CellularAutomaton(ABC):
                            hydration=0,
                            burned=False))
 
-    
-
     def ignite(self, x: int, y: int) -> None:
         """
         Changes a given cell state to burning
@@ -159,7 +157,7 @@ class CellularAutomaton(ABC):
         self.grid = new_grid
 
         self._done = not self._changed
-    
+
     def run(self, do_print: bool) -> None:
         """
         Print and Step until Done
@@ -200,7 +198,11 @@ class CellularAutomaton(ABC):
         @return: None
         """
         index = self.i(x, y)
-        self.grid[index] = self.grid[index].factory(hydration=amount, fire_intensity=0, burned=True)
+        print(f'Water dropped at ({x}, {y}) [{index}]')
+        self.grid[index] = self.grid[index].factory(
+            hydration=amount,
+            fire_intensity=0,
+            burned=True)
 
     def done(self) -> bool:
         """

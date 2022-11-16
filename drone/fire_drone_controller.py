@@ -42,6 +42,7 @@ class DroneController(object):
         self.drones = [FireDrone(x, speed, location.x, location.y) for x in range(self.number_of_drones)]
         self.targets: List[Coordinate] = []
         self.forest = forest
+        self.targets: List[Coordinate] = []
         self.location = location
 
     def step(self) -> None:
@@ -64,18 +65,17 @@ class DroneController(object):
                 continue
 
             if not drone.reached_target():
-                if drone.rounds_to_target() == 1:
-                    # Re-target to closest and most recent fire?
-                    pass
-                    designated_fire: FireInformation = fires[0]
-
-                    for f in fires:
-                        d = drone.position.distance(f.location)
-                        if d < 1 and f.fire < designated_fire.fire:
-                            designated_fire = f
-
-                    self.targets.remove(drone.target)
-                    self.assign_fire_to_drone(drone, designated_fire)
+                # if drone.rounds_to_target() == 1:
+                #     # Re-target to closest and most recent fire?
+                #     pass
+                #     designated_fire: FireInformation = fires[0]
+                #
+                #     for f in fires:
+                #         d = drone.position.distance(f.location)
+                #         if d < 1 and f.fire < designated_fire.fire:
+                #             designated_fire = f
+                #
+                #     self.assign_fire_to_drone(drone, designated_fire)
                 drone.advance()
                 continue
 
@@ -100,6 +100,9 @@ class DroneController(object):
     def assign_fire_to_drone(self, drone: FireDrone, targeted_fire: FireInformation) -> None:
         """
         """
+        if drone.target in self.targets:
+            self.targets.remove(targeted_fire.location)
+
         drone.state = DroneState.FIRE_FIGHTING
         drone.set_target(targeted_fire.location)
         self.targets.append(targeted_fire.location)
