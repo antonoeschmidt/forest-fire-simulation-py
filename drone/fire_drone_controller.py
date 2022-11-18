@@ -6,6 +6,12 @@ from drone.fire_state import DroneState
 from drone.fire_drone import FireDrone
 
 
+class DroneSettings(object):
+
+    def __init__(self, speed: int):
+        self.speed = speed
+
+
 class FireInformation(object):
     """Information holder for fires
     """
@@ -35,11 +41,11 @@ class DroneController(object):
     """Controls and dispatch drones
     """
 
-    def __init__(self, number_of_drones: int, forest: CellularAutomaton, speed: int, location: Coordinate):
+    def __init__(self, number_of_drones: int, forest: CellularAutomaton, location: Coordinate, settings: DroneSettings):
         """Creates a new drone controller
         """
         self.number_of_drones = number_of_drones
-        self.drones = [FireDrone(x, speed, location.x, location.y) for x in range(self.number_of_drones)]
+        self.drones = [FireDrone(x, settings.speed, location.x, location.y) for x in range(self.number_of_drones)]
         self.targets: List[Coordinate] = []
         self.forest = forest
         self.targets: List[Coordinate] = []

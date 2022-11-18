@@ -1,9 +1,32 @@
+from typing import Callable
+
 from ca.cellular_automaton import CellObject, CellularAutomaton, VegetationType
 from bresenham import bresenham
 import math
 
 
+class ForestSettings(object):
+
+    def __init__(self,
+                 veg_low_burn_time: int,
+                 veg_medium_burn_time: int,
+                 veg_high_burn_time: int,
+                 spread_after: int,
+                 determine_burn_factor: Callable[[int], float]) -> None:
+
+        self.determine_burn_factor = determine_burn_factor
+        self.spread_after = spread_after
+        self.veg_high_burn_time = veg_high_burn_time
+        self.veg_low_burn_time = veg_low_burn_time
+        self.veg_medium_burn_time = veg_medium_burn_time
+
+
 class SimpleCa(CellularAutomaton):
+
+    def __init__(self, rows: int, columns: int, settings: ForestSettings):
+        super().__init__(rows, columns)
+        self.settings = settings
+
     def rule(self, xy):
         """
         The `rule` function determines what the next state of a cell should be.
@@ -33,7 +56,7 @@ class SimpleCa(CellularAutomaton):
             y (int): column location
 
         Returns:
-            CellObject: New verison of the cell
+            CellObject: New version of the cell
         """
         # Fire does not spread before burning is 5
         if original.fire > 0:
@@ -43,11 +66,11 @@ class SimpleCa(CellularAutomaton):
             return new
 
         # Determine how long a single cell should burn depending on vegetation
-        if VegetationType.LOW_VEG == original.veg and original.fire > 10:
+        if VegetationType.LOW_VEG == original.veg and original.fire > self.settings.veg_low_burn_time:
             return new.factory(burned=True, fire_intensity=0)
-        elif VegetationType.MED_VEG == original.veg and original.fire > 15:
+        elif VegetationType.MED_VEG == original.veg and original.fire > self.settings.veg_medium_burn_time:
             return new.factory(burned=True, fire_intensity=0)
-        elif VegetationType.HIGH_VEG == original.veg and original.fire > 20:
+        elif VegetationType.HIGH_VEG == original.veg and original.fire > self.settings.veg_high_burn_time:
             return new.factory(burned=True, fire_intensity=0)
         else:
             pass
@@ -57,7 +80,7 @@ class SimpleCa(CellularAutomaton):
 
         wind_strength = math.sqrt(x_wind ** 2 + y_wind ** 2)
         wind_strength = wind_strength * 3
-        if original.fire > 3:
+        if original.fire > self.settings.spread_after:
             # Fire Intensity ===========================================================================================
             # 🪵 More wood == more fire 🔥
             burn_factor = 0
