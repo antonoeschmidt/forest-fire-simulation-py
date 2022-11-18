@@ -67,7 +67,7 @@ def program(grid_size: int = 30,
         # drones.append(Drone(50, base_station_location, env))
 
     # drone_base_station = BaseStation(drones, base_station_location, forest)
-    drone_base_station = DroneController(20, forest, 5, Coordinate(2, 3))
+    drone_base_station = DroneController(40, forest, 5, Coordinate(2, 3))
 
     env.process(fire_progression(env, forest))
     env.process(drone_progression(env, drone_base_station))
