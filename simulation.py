@@ -150,7 +150,6 @@ def start_websocket():
 
 def grid(simulation_data):
     grid_size = simulation_data['grid_size']
-    # wind = simulation_data['wind']
     seed = simulation_data['seed']
 
     forest = SimpleCa(grid_size, grid_size, ForestSettings(0, 0, 0, 0, None, (0, 0), seed))
