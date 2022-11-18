@@ -46,7 +46,8 @@ class SimpleCa(CellularAutomaton):
 
         new = self.fire_rule(new, original, x, y)
 
-        self._changed |= new != original
+        changed = (new.fire > original.fire or new.burned != original.burned)
+        self._changed |= changed
         return new
 
     def fire_rule(self, new: CellObject, original: CellObject, x: int, y: int) -> CellObject:
@@ -62,7 +63,7 @@ class SimpleCa(CellularAutomaton):
             CellObject: New version of the cell
         """
         # Fire does not spread before burning is 5
-        if original.fire > 0:
+        if original.fire > 0 and not original.burned:
             new = new.factory(fire=original.fire + 1)
 
         if original.burned or original.veg.value in [6, 7]:

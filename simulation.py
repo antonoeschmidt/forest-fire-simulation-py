@@ -105,8 +105,18 @@ def program(settings_json: str):
     env.process(drone_progression(env, drone_base_station))
     env.process(data_progression(env, forest, drone_base_station, settings.grid_size))
 
-    env.run(until=settings.run_until)
-    print("Simulation done")
+    ticks = 0
+    while True:
+        ticks = ticks + 1
+        env.run(until=ticks)
+
+        if forest.done():
+            break
+
+        if ticks >= settings.run_until:
+            break
+
+    print(f"Simulation done: {ticks} ticks ({settings.run_until} allocated)")
 
     simulation_done.x = True
 
