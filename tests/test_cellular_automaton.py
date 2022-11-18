@@ -1,12 +1,13 @@
 import unittest
-from ca.simple_cell import SimpleCa
+from ca.simple_cell import SimpleCa, ForestSettings
+
 
 class TestStringMethods(unittest.TestCase):
 
     def setUp(self) -> None:
         self.rows = 4
         self.cols = 8
-        self.ca = SimpleCa(self.rows, self.cols)
+        self.ca = SimpleCa(self.rows, self.cols, ForestSettings(2, 3, 4, 2, (3, 1), 1))
 
     def test_is_burning_sym(self):
         self.ca.ignite(2, 2)
