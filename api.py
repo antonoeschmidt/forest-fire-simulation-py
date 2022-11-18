@@ -20,7 +20,7 @@ def start_websocket():
 @app.route('/run', methods=['POST'])
 def test():
     print(request.json)
-    simulation.run(request.json)
+    simulation.run(str(request.json))
     return jsonify({'message': 'Started simulation!'})
 
 

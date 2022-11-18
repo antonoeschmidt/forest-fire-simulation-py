@@ -8,8 +8,10 @@ from drone.fire_drone import FireDrone
 
 class DroneSettings(object):
 
-    def __init__(self, speed: int):
-        self.speed = speed
+    def __init__(self, drone_speed: int, drone_base_location: Coordinate, number_of_drones: int, **kwargs):
+        self.number_of_drones = number_of_drones
+        self.location = drone_base_location
+        self.drone_speed = drone_speed
 
 
 class FireInformation(object):
@@ -41,15 +43,16 @@ class DroneController(object):
     """Controls and dispatch drones
     """
 
-    def __init__(self, number_of_drones: int, forest: CellularAutomaton, location: Coordinate, settings: DroneSettings):
+    def __init__(self, forest: CellularAutomaton, settings: DroneSettings):
         """Creates a new drone controller
         """
-        self.number_of_drones = number_of_drones
-        self.drones = [FireDrone(x, settings.speed, location.x, location.y) for x in range(self.number_of_drones)]
+        self.location = Coordinate(settings.location['x'], settings.location['y'])
+        self.number_of_drones = settings.number_of_drones
+        self.drones = [FireDrone(x, settings.drone_speed, self.location.x, self.location.y) for x in
+                       range(self.number_of_drones)]
         self.targets: List[Coordinate] = []
         self.forest = forest
         self.targets: List[Coordinate] = []
-        self.location = location
 
     def step(self) -> None:
         """Updating all drones respectively

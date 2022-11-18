@@ -1,8 +1,7 @@
-from typing import Callable
+from typing import Callable, Tuple
 
 from ca.cellular_automaton import CellObject, CellularAutomaton, VegetationType
 from bresenham import bresenham
-import math
 
 
 class ForestSettings(object):
@@ -12,8 +11,12 @@ class ForestSettings(object):
                  veg_medium_burn_time: int,
                  veg_high_burn_time: int,
                  spread_after: int,
-                 determine_burn_factor: Callable[[int], float]) -> None:
-
+                 wind: Tuple[int, int],
+                 seed: int,
+                 determine_burn_factor: Callable[[CellObject, Tuple[int, int]], float] = None,
+                 **kwargs) -> None:
+        self.seed = seed
+        self.wind = wind
         self.determine_burn_factor = determine_burn_factor
         self.spread_after = spread_after
         self.veg_high_burn_time = veg_high_burn_time
@@ -24,7 +27,7 @@ class ForestSettings(object):
 class SimpleCa(CellularAutomaton):
 
     def __init__(self, rows: int, columns: int, settings: ForestSettings):
-        super().__init__(rows, columns)
+        super().__init__(rows, columns, settings.wind, settings.seed)
         self.settings = settings
 
     def rule(self, xy):
@@ -77,24 +80,9 @@ class SimpleCa(CellularAutomaton):
 
         # Should I burn?
         (x_wind, y_wind) = new.wind
-
-        wind_strength = math.sqrt(x_wind ** 2 + y_wind ** 2)
-        wind_strength = wind_strength * 3
         if original.fire > self.settings.spread_after:
-            # Fire Intensity ===========================================================================================
-            # 🪵 More wood == more fire 🔥
-            burn_factor = 0
-            if VegetationType.LOW_VEG == original.veg:
-                burn_factor = 5
-            elif VegetationType.MED_VEG == original.veg:
-                burn_factor = 15
-            elif VegetationType.HIGH_VEG == original.veg:
-                burn_factor = 20
-            else:
-                pass
-
-            new = new.factory(fire_intensity=wind_strength + burn_factor)
-            return new  # I'm already burning
+            new = new.factory(fire_intensity=self.settings.determine_burn_factor(original, new.wind))
+            return new
 
         summed_intensity = 0
 
