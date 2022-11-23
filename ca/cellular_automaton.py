@@ -56,18 +56,20 @@ def cell_state_description() -> None:
         print(f"{name}: {value.value}", end='; ')
     print()
 
-class Stats():
+
+class Stats(object):
     def __init__(self, n, m) -> None:
         self.x = []
         self.y = []
         self.burned_cells = 0
         self.total_cells = n * m
-    
+
     def add_stat(self, time):
         self.x.append(time)
         self.y.append(self.burned_cells / self.total_cells)
         if self.burned_cells / self.total_cells > 1:
-            print(self.burned_cells, "/" ,self.total_cells)
+            print(self.burned_cells, "/", self.total_cells)
+
 
 class CellularAutomaton(ABC):
     """
@@ -78,7 +80,7 @@ class CellularAutomaton(ABC):
         """
 
         """
-        self.grid = []
+        self.grid: List[CellObject] = []
         self.rows = rows
         self.cols = columns
         self._done = False
@@ -90,7 +92,6 @@ class CellularAutomaton(ABC):
         self.random.seed(seed)
         self.generate_grid()
 
-
     def generate_grid(self):
         for x in range(self.rows * self.cols):
             self.grid.append(
@@ -100,8 +101,6 @@ class CellularAutomaton(ABC):
                            wind=self.wind,
                            hydration=0,
                            burned=False))
-
-    
 
     def ignite(self, x: int, y: int) -> None:
         """
@@ -206,6 +205,21 @@ class CellularAutomaton(ABC):
         """
         return x + y * self.cols
 
+    def drop_water(self, x: int, y: int, amount: float) -> None:
+        """Add hydration to cell
+
+        @param x: coordinate
+        @param y: coordinate
+        @param amount: amount
+        @return: None
+        """
+        index = self.i(x, y)
+        print(f'Water dropped at ({x}, {y}) [{index}]')
+        self.grid[index] = self.grid[index].factory(
+            hydration=amount,
+            fire_intensity=0,
+            burned=True)
+
     def done(self) -> bool:
         """
         Return True if there is no more burning cells
@@ -216,11 +230,11 @@ class CellularAutomaton(ABC):
         (x, y) = xy
         old = self.get(x, y)
         result = self.rule(xy)
-        
+
         if result.fire > 0 and old.fire == 0:
             self.stats.burned_cells += 1
-        
-        return result 
+
+        return result
 
     @classmethod
     @abstractmethod
