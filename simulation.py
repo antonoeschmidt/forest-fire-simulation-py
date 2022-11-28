@@ -12,6 +12,7 @@ import threading
 import simpy
 import websockets
 from ca.cellular_automaton import CellularAutomaton, CellObject, VegetationType
+from ca.iteration_one import IterationOne
 from ca.simple_cell import SimpleCa, ForestSettings
 from drone.fire_drone_controller import DroneController, Coordinate, DroneSettings
 
@@ -97,7 +98,8 @@ def program(settings_json: str):
     forest_settings = ForestSettings(**loaded_json)
     forest_settings.determine_burn_factor = determine_burn_factor_basic
 
-    forest = SimpleCa(settings.grid_size, settings.grid_size, forest_settings)
+    # forest = SimpleCa(settings.grid_size, settings.grid_size, forest_settings)
+    forest = IterationOne(settings.grid_size, settings.grid_size, forest_settings)
     for ignition_point in settings.ignition_points:
         forest.ignite(ignition_point[1], ignition_point[0])
 
@@ -105,7 +107,7 @@ def program(settings_json: str):
 
     env.process(fire_progression(env, forest))
     env.process(drone_progression(env, drone_base_station))
-    env.process(data_progression(env, forest, drone_base_station, settings.grid_size))
+    # env.process(data_progression(env, forest, drone_base_station, settings.grid_size))
 
     ticks = 0
     while True:
