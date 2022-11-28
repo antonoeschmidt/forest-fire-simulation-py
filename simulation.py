@@ -1,7 +1,9 @@
 import ast
 import asyncio
+import datetime
 import json
 import math
+import os
 import queue
 from typing import Tuple, List
 
@@ -116,6 +118,19 @@ def program(settings_json: str):
         if ticks >= settings.run_until:
             break
 
+    path = f'stats/{datetime.datetime.now().strftime("%A_%d_%H_%M")}'
+    os.makedirs(path)
+
+    configuration = open(f'{path}/configuration', mode='w+')
+    configuration.write(settings_json)
+
+    stats = open(f'{path}/stats', mode='w+')
+
+    stats.write('time,ratio,burnedcell\n')
+    stats.writelines([f'{x}, {y}, {b}\n' for (x, b, y) in zip(forest.stats.x, forest.stats.b, forest.stats.y)])
+
+    configuration.close()
+    stats.close()
     print(f"Simulation done: {ticks} ticks ({settings.run_until} allocated)")
 
     simulation_done.x = True

@@ -61,12 +61,14 @@ class Stats(object):
     def __init__(self, n, m) -> None:
         self.x = []
         self.y = []
+        self.b = []
         self.burned_cells = 0
         self.total_cells = n * m
 
     def add_stat(self, time):
         self.x.append(time)
         self.y.append(self.burned_cells / self.total_cells)
+        self.b.append(self.burned_cells)
         if self.burned_cells / self.total_cells > 1:
             print(self.burned_cells, "/", self.total_cells)
 
@@ -214,7 +216,7 @@ class CellularAutomaton(ABC):
         @return: None
         """
         index = self.i(x, y)
-        print(f'Water dropped at ({x}, {y}) [{index}]')
+        
         self.grid[index] = self.grid[index].factory(
             hydration=amount,
             fire_intensity=0,
