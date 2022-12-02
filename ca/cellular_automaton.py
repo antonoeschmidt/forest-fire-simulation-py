@@ -64,11 +64,12 @@ class Stats(object):
         self.y = []
         self.b = []
         self.burned_cells = 0
+        self.burning_cells = 0
         self.total_cells = n * m
         self.stats_file = stat_file
         if self.stats_file:
             self.stats_file = open(stat_file, mode='w+')
-            self.stats_file.write('time,ratio,burnedcell,systemtime\n')
+            self.stats_file.write('time,ratio,burnedcells,burningcells,systemtime\n')
 
     def __del__(self):
         if self.stats_file:
@@ -181,6 +182,7 @@ class CellularAutomaton(ABC):
         """
         self._changed = False
         self._step = self._step + 1
+        self.stats.burning_cells = 0
         new_grid = [self.do_rule(self.xy(i)) for i, c in enumerate(self.grid)]
         self.grid = new_grid
 
@@ -247,6 +249,7 @@ class CellularAutomaton(ABC):
 
         if result.fire > 0 and old.fire == 0:
             self.stats.burned_cells += 1
+            self.stats.burning_cells += 1
 
         return result
 

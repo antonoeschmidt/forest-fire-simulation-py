@@ -4,6 +4,10 @@
 
 # Getting started
 
+## Known problems
+Windows gives some odd behavoir, instead run the simultation in Docker or WSL.
+No issues reported on Linux or MacOS.
+
 ## Requirements
 
 * [Python 3](https://www.python.org/downloads/) (>= 3.10)
