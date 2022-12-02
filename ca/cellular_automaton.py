@@ -104,6 +104,7 @@ class CellularAutomaton(ABC):
         self.stats = Stats(rows, columns, stat_file)
         self.random = random.Random()
         self.random.seed(seed)
+        self.ignition_points = []
         self.generate_grid()
 
     def generate_grid(self):
@@ -117,9 +118,11 @@ class CellularAutomaton(ABC):
                            burned=False))
 
     def ignite(self, x: int, y: int) -> None:
+        
         """
         Changes a given cell state to burning
         """
+        self.ignition_points.append((x, y))
         index = self.i(x, y)
         self.grid[index] = self.grid[index].factory(fire=1)
 
