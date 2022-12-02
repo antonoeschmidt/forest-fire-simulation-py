@@ -13,14 +13,16 @@ import simpy
 import websockets
 from ca.cellular_automaton import CellularAutomaton, CellObject, VegetationType
 from ca.iteration_one import IterationOne
+from ca.iteration_two import IterationTwo
 from ca.simple_cell import SimpleCa, ForestSettings
-from drone.fire_drone_controller import DroneController, Coordinate, DroneSettings
+from drone.fire_drone_controller_2 import DroneControllerTwo, Coordinate, DroneSettings
+from drone.fire_drone_controller_1 import DroneControllerOne
 
 simulation_done = threading.local()
 simulation_done.x = False
 
 
-def drone_progression(env: simpy.core.Environment, drone_base_station: DroneController):
+def drone_progression(env: simpy.core.Environment, drone_base_station: DroneControllerTwo):
     while True:
         yield env.timeout(1)
         drone_base_station.step()
@@ -32,7 +34,7 @@ def fire_progression(env: simpy.core.Environment, forest: CellularAutomaton):
         forest.step()
 
 
-def data_progression(env: simpy.core.Environment, forest: CellularAutomaton, drone_base_station: DroneController,
+def data_progression(env: simpy.core.Environment, forest: CellularAutomaton, drone_base_station: DroneControllerTwo,
                      grid_size):
     while True:
         yield env.timeout(1)
@@ -42,17 +44,29 @@ def data_progression(env: simpy.core.Environment, forest: CellularAutomaton, dro
         for drone in drone_base_station.drones:
             drone_locations.append((drone.position.y, drone.position.x))
         data = {'grid': forest.data(), 'grid_size': grid_size, 'wind': forest.wind, 'drones': drone_locations,
-                'stats': {'x': forest.stats.x, 'y': forest.stats.y}}
-        queue.put(data)
+                'stats.csv': {'x': forest.stats.x, 'y': forest.stats.y}}
+
+        try:
+            queue.put(data)
+        except Exception:
+            pass
 
 
 class Settings(object):
-    def __init__(self, grid_size: int, slow_simulation: bool, run_until: int, ignition_points: List[Tuple[int, int]],
+    def __init__(self,
+                 grid_size: int,
+                 slow_simulation: bool,
+                 run_until: int,
+                 ignition_points: List[Tuple[int, int]],
+                 forest_iteration: int = 4,
+                 drone_iteration: int = 3,
                  **kwargs):
         self.run_until = run_until
         self.ignition_points = ignition_points
         self.slow_simulation = slow_simulation
         self.grid_size = grid_size
+        self.forest_iteration = forest_iteration
+        self.drone_iteration = drone_iteration
 
 
 def determine_burn_factor_basic(cell: CellObject, wind: Tuple[int, int]) -> float:
@@ -98,16 +112,39 @@ def program(settings_json: str):
     forest_settings = ForestSettings(**loaded_json)
     forest_settings.determine_burn_factor = determine_burn_factor_basic
 
-    # forest = SimpleCa(settings.grid_size, settings.grid_size, forest_settings)
-    forest = IterationOne(settings.grid_size, settings.grid_size, forest_settings)
+    path = f'stats/{datetime.datetime.now().strftime("%A_%d_%H_%M_%S")}'
+    os.makedirs(path)
+
+    configuration = open(f'{path}/configuration.json', mode='w+')
+    configuration.write(settings_json)
+    configuration.close()
+
+    if settings.forest_iteration == 1:
+        forest = IterationOne(settings.grid_size, settings.grid_size, forest_settings, f'{path}/stats.csv')
+    elif settings.forest_iteration == 2:
+        forest = IterationTwo(settings.grid_size, settings.grid_size, forest_settings, f'{path}/stats.csv')
+    elif settings.forest_iteration == 3:
+        forest = SimpleCa(settings.grid_size, settings.grid_size, forest_settings, f'{path}/stats.csv')
+    elif settings.forest_iteration == 4:
+        forest = SimpleCa(settings.grid_size, settings.grid_size, forest_settings, f'{path}/stats.csv')
+    else:
+        raise Exception("Iteration not yet supported")
+
     for ignition_point in settings.ignition_points:
         forest.ignite(ignition_point[1], ignition_point[0])
 
-    drone_base_station = DroneController(forest, DroneSettings(**loaded_json))
+    if settings.drone_iteration == 1:
+        drone_base_station = DroneControllerOne(forest, DroneSettings(**loaded_json))
+    elif settings.drone_iteration == 2:
+        drone_base_station = DroneControllerTwo(forest, DroneSettings(**loaded_json))
+    elif settings.drone_iteration == 3:
+        drone_base_station = DroneControllerTwo(forest, DroneSettings(**loaded_json))
+    else:
+        raise Exception("Iteration not yet supported")
 
     env.process(fire_progression(env, forest))
     env.process(drone_progression(env, drone_base_station))
-    # env.process(data_progression(env, forest, drone_base_station, settings.grid_size))
+    env.process(data_progression(env, forest, drone_base_station, settings.grid_size))
 
     ticks = 0
     while True:
@@ -120,19 +157,6 @@ def program(settings_json: str):
         if ticks >= settings.run_until:
             break
 
-    path = f'stats/{datetime.datetime.now().strftime("%A_%d_%H_%M")}'
-    os.makedirs(path)
-
-    configuration = open(f'{path}/configuration', mode='w+')
-    configuration.write(settings_json)
-
-    stats = open(f'{path}/stats', mode='w+')
-
-    stats.write('time,ratio,burnedcell\n')
-    stats.writelines([f'{x}, {y}, {b}\n' for (x, b, y) in zip(forest.stats.x, forest.stats.b, forest.stats.y)])
-
-    configuration.close()
-    stats.close()
     print(f"Simulation done: {ticks} ticks ({settings.run_until} allocated)")
 
     simulation_done.x = True

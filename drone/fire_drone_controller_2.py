@@ -39,7 +39,7 @@ class FireInformation(object):
         return not self.__gt__(other)
 
 
-class DroneController(object):
+class DroneControllerTwo(object):
     """Controls and dispatch drones
     """
 

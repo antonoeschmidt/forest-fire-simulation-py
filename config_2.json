@@ -1,8 +1,8 @@
 {
   "grid_size": 100,
   "wind": [
-    0,
-    0
+    3,
+    1
   ],
   "ignition_points": [
     [
@@ -13,11 +13,11 @@
   "slow_simulation": false,
   "seed": 1,
   "run_until": 1000,
-  "number_of_drones": 40,
+  "number_of_drones": 0,
   "drone_speed": 5,
   "drone_base_location": {
-    "x": 30,
-    "y": 5.0
+    "x": 3,
+    "y": 5
   },
   "base_station_location": [
     1,
@@ -26,5 +26,7 @@
   "veg_low_burn_time": 15,
   "veg_medium_burn_time": 25,
   "veg_high_burn_time": 30,
-  "spread_after": 0
+  "spread_after": 0,
+  "forest_iteration": 2,
+  "drone_iteration": 2
 }

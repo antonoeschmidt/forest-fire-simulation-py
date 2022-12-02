@@ -1,6 +1,6 @@
 import math
 
-from drone.fire_drone_controller import Coordinate, DroneState
+from drone.fire_drone_controller_2 import Coordinate, DroneState
 
 
 class FireDrone(object):
