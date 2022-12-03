@@ -129,37 +129,28 @@ class DroneControllerThree(object):
         drone.set_target(targeted_fire.location)
         self.targets.append(Coordinate(targeted_fire.location.x, targeted_fire.location.y))
 
-    def find_fires(self) -> List[FireInformation]:
+    def calculate_barrier(self, fire) -> List[FireInformation]:
         """Find list of fires - the order of importance (FIFO)
         """
    
-        fires = []
-        any_fire = False
         south, north, east, west = (0,0), (0, self.forest.rows), (0,0), (self.forest.cols,0)
 
         # Find the furtest south, north, east and west.
-        for i, cell in enumerate(self.forest.grid):
-            if (not cell.burned) and cell.fire > 0:
-                any_fire = True
-                x, y = self.forest.xy(i)
-                if y > south[1]:
-                    south = (x, y)
-                if y < north[1]:
-                    north = (x, y)
-                if x > east[0]:
-                    east = (x, y)
-                if x < west[0]:
-                    west = (x, y)
-
-        if not any_fire:
-            return []
-
+        for i in enumerate(fire):
+            x, y = self.forest.xy(i)
+            if y > south[1]:
+                south = (x, y)
+            if y < north[1]:
+                north = (x, y)
+            if x > east[0]:
+                east = (x, y)
+            if x < west[0]:
+                west = (x, y)
+        ## update positions with how far away we think the barrier should be.
         west_x = west[0] - self.wind[0] if west[0] - self.wind[0] > -1 else 0
         east_x = east[0] + self.wind[0] if east[0] + self.wind[0] < self.forest.cols else self.forest.cols - 1
         north_y = north[1] - self.wind[1] if north[1] - self.wind[1] > -1 else 0
         south_y = south[1] + self.wind[1] if south[1] + self.wind[1] < self.forest.rows else self.forest.rows - 1
-
-        
         # east_to_north = list(bresenham(east_x, east[1], north[0], north_y))
         # north_to_west = list(bresenham(north[0], north_y, west_x, west[1]))
         # west_to_south = list(bresenham(west_x, west[1], south[0], south_y))
@@ -173,13 +164,13 @@ class DroneControllerThree(object):
         if self.wind[1] > 0:
             y_direction = "positive"
 
-        fires = []
+        barrier_points = []
         # based on the wind direction we find the vector we need to fight it.
         if x_direction == "positive":
             if y_direction == "positive":
                 #fires = west_to_south + move_east(west_to_south, abs(self.wind[0]), self.forest.rows) + move_south(west_to_south, abs(self.wind[1]), self.forest.cols)
                 south_to_east = list(bresenham(south[0], south_y, east_x, east[1]))
-                fires = south_to_east + move_north(south_to_east, abs(self.wind[1])) + move_east(south_to_east, abs(self.wind[0]), self.forest.rows)
+                barrier_points = south_to_east + move_north(south_to_east, abs(self.wind[1])) + move_east(south_to_east, abs(self.wind[0]), self.forest.rows)
             else:
                 pass
                 # we go to east from south, thats north and east.
@@ -197,19 +188,8 @@ class DroneControllerThree(object):
                 #fires = east_to_north + move_west(east_to_north, abs(self.wind[0])) + move_north(east_to_north, abs(self.wind[1]))
         
         # Removing duplicates
-        fires = [p for p in (set(tuple(i) for i in fires))]
-        #print(fires)
-        for fire in fires:
-            if 0 > fire[0] or 0 > fire[1] or fire[0] >= self.forest.rows or fire[1] >= self.forest.cols:
-                print("out of bounds")
-                print(fire)
-
-
-        # TODO: Add width to wind direction
-        # TODO: Handle multiple iginition points
-        # TODO: Prioritize the width on the wind direction
-
-        return [FireInformation(Coordinate(fire[0], fire[1]), 0) for fire in fires]
+        barrier_points = [p for p in (set(tuple(i) for i in barrier_points))]
+        return [FireInformation(Coordinate(fire[0], fire[1]), 0) for fire in barrier_points]
 
 def move_south(points, wind_size, max_index):
     additional = []
