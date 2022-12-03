@@ -1,4 +1,4 @@
-from typing import List
+from typing import Tuple, List
 import sys
 from bresenham import bresenham
 
@@ -10,10 +10,11 @@ from drone.fire_drone import FireDrone
 
 class DroneSettings(object):
 
-    def __init__(self, drone_speed: int, drone_base_location: Coordinate, number_of_drones: int, **kwargs):
+    def __init__(self, drone_speed: int, drone_base_location: Coordinate, number_of_drones: int, wind: Tuple[int, int], **kwargs):
         self.number_of_drones = number_of_drones
         self.location = drone_base_location
         self.drone_speed = drone_speed
+        self.wind = wind
 
 
 class FireInformation(object):
@@ -55,6 +56,7 @@ class DroneControllerThree(object):
         self.targets: List[Coordinate] = []
         self.forest = forest
         self.targets: List[Coordinate] = []
+        self.wind = settings.wind
 
     def step(self) -> None:
         """Updating all drones respectively
@@ -135,6 +137,7 @@ class DroneControllerThree(object):
         any_fire = False
         south, north, east, west = (0,0), (0, self.forest.rows), (0,0), (self.forest.cols,0)
 
+        # Find the furtest south, north, east and west.
         for i, cell in enumerate(self.forest.grid):
             if (not cell.burned) and cell.fire > 0:
                 any_fire = True
@@ -165,33 +168,93 @@ class DroneControllerThree(object):
         print("east_to_north", east_to_north)
         print("north_to_west", north_to_west)
         print("west_to_south", west_to_south)
+        ## Now we find the addional based on the wind direction.
+        ## So first we have to find the wind
+        additional = []
+        x_direction, y_direction = "negative", "negative"
 
-        additonal = []
-        for p in south_to_east:
-            if p[0] + 1 < self.forest.cols:
-                additonal.append((p[0] + 1, p[1]))
-            if p[1] + 1 < self.forest.rows:
-                additonal.append((p[0], p[1] + 1))
+        if self.wind[0] > 0:
+            x_direction = "positive"
+        if self.wind[1] > 0:
+            y_direction = "negative"
         
-        for p in east_to_north:
-            if p[0] + 1 < self.forest.cols:
-                additonal.append((p[0] + 1, p[1]))
-            if p[1] - 1 > 0:
-                additonal.append((p[0], p[1] - 1))
+        points
+        if x_direction == "positive":
+            if y_direction == "positive":
+                # west to south we go south, but we also go east
+                points = west_to_south
+                points + move_east(points, abs(self.wind[0]), self.forest.rows)
+                points + move_south(points, abs(self.wind[1]), self.forest.cols)
+                
+            else:
+                # here y is negative
+                points = south_to_east
+                # we go to east from south, thats north and east.
+                points + move_north(points, abs(self.wind[1]))
+                points + move_east(points, abs(self.wind[0]), self.forest.rows)
+        # now x is negative
+        else:
+            if y_direction == "positive":
+                # north to west means going south and north.
+                points = north_to_west
+                points + move_south(points, abs(self.wind[1]), self.forest.cols)
+                points + move_west(points, abs(self.wind[0]))
+            else:
+                # here y is negative
+                # going north we go from our east point and then north
+                points = east_to_north
+                points + move_west(points, abs(self.wind[0]))
+                points + move_north(points, abs(self.wind[1]))
+
+        # for p in south_to_east:
+        #     # we move right, that positive
+        #     if self.wind[0] > 0:
+        #         for i in range(self.wind[0]):
+        #             if p[0] + i < self.forest.cols:
+        #                 additional.append((p[0] + i, p[1]))
+        #     # now we move up, thats negative
+        #     if self.wind[1] < 0:
+        #         for i in range(abs(self.wind[1])):
+        #             if p[1] - i < -1:
+        #                 additional.append((p[0], p[1] - i))
+            
+        # for p in east_to_north:
+        #     # Now we left, that negative
+        #     if self.wind[0] < 0:
+        #         for i in range(abs(self.wind[0])):
+        #             if p[0] - i < -1:
+        #                 additional.append((p[0] - i, p[1]))
+        #     # move up, thats negative
+        #     if self.wind[1] < 0:
+        #         for i in range(abs(self.wind[1])):
+        #             if p[1] - i < -1:
+        #                 additional.append((p[0], p[1] - i))
+                    
+        # for p in north_to_west:
+        #     # now we move left, so it's positive
+        #     if self.wind[0] < 0:
+        #         for i in range(abs(self.wind[0])):
+        #             if p[0] - i < -1:
+        #                 additional.append((p[0] - i, p[1]))
+        #     # we move down, thats positive
+        #     if self.wind[1] > 0:
+        #         for i in range(abs(self.wind[1])):
+        #             if p[1] + i < self.forest.cols:
+        #                 additional.append((p[0], p[1] + i))
         
-        for p in north_to_west:
-            if p[0] - 1 > 0:
-                additonal.append((p[0] - 1, p[1]))
-            if p[1] - 1 > 0:
-                additonal.append((p[0], p[1] - 1))
+        # for p in west_to_south:
+        #     # we move left, thats positive
+        #     if self.wind[0] > 0:
+        #         for i in range(self.wind[0]):
+        #             if p[0] + i < self.forest.rows:
+        #                 additional.append((p[0] + i, p[1]))
+        #     # we move down, thats postive.
+        #     if self.wind[1] > 0:
+        #         for i in range(abs(self.wind[1])):
+        #             if p[1] + i < self.forest.cols:
+        #                 additional.append((p[0], p[1] + i))
         
-        for p in west_to_south:
-            if p[0] - 1 > 0:
-                additonal.append((p[0] - 1, p[1]))
-            if p[1] + 1 < self.forest.rows:
-                additonal.append((p[0], p[1] + 1))
-        
-        fires = south_to_east + east_to_north + north_to_west + west_to_south + additonal
+        fires = additional #south_to_east + east_to_north + north_to_west + west_to_south + additional
 
         # Removing duplicates
         fires = [p for p in (set(tuple(i) for i in fires))]
@@ -202,3 +265,37 @@ class DroneControllerThree(object):
         # TODO: Prioritize the width on the wind direction
 
         return [FireInformation(Coordinate(fire[0], fire[1]), 0) for fire in fires]
+
+def move_south(points, wind_size, max_index):
+    additional = []
+    for p in points:
+            for i in range(wind_size):
+                if p[1] + i < max_index:
+                    additional.append((p[0], p[1]  + i))
+    
+    return additional
+
+def move_north(points, wind_size):
+    additional = []
+    for p in points:
+            for i in range(wind_size):
+                if p[1] - i > -1:
+                    additional.append((p[0], p[1] - i))
+    return additional
+
+def move_east(points, wind_size, max_index):
+    additional = []
+    for p in points:
+            for i in range(wind_size):
+                if p[0] + i < max_index:
+                    additional.append((p[0] + i, p[1]))
+    
+    return additional
+
+def move_west(points, wind_size):
+    additional = []
+    for p in points:
+            for i in range(wind_size):
+                if p[0] - i > -1:
+                    additional.append((p[0] - i, p[1]))
+    return additional
