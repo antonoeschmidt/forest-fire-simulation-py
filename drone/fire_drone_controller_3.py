@@ -1,11 +1,13 @@
 from typing import List
-import sys
 from bresenham import bresenham
+from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
 
 from ca.cellular_automaton import CellularAutomaton
 from drone.fire_coordinate import Coordinate
 from drone.fire_state import DroneState
 from drone.fire_drone import FireDrone
+
 
 
 class DroneSettings(object):
@@ -55,6 +57,7 @@ class DroneControllerThree(object):
         self.targets: List[Coordinate] = []
         self.forest = forest
         self.targets: List[Coordinate] = []
+        self.ticks = 0
 
     def step(self) -> None:
         """Updating all drones respectively
@@ -130,15 +133,14 @@ class DroneControllerThree(object):
     def find_fires(self) -> List[FireInformation]:
         """Find list of fires - the order of importance (FIFO)
         """
-   
+        clusters = self.find_clusters()
         fires = []
-        any_fire = False
-        south, north, east, west = (0,0), (0, self.forest.rows), (0,0), (self.forest.cols,0)
 
-        for i, cell in enumerate(self.forest.grid):
-            if (not cell.burned) and cell.fire > 0:
-                any_fire = True
-                x, y = self.forest.xy(i)
+        for cluster in clusters:
+            cluster_fires = []
+            south, north, east, west = (0,0), (0, self.forest.rows), (0,0), (self.forest.cols,0)
+            for cell in cluster:
+                x, y = cell
                 if y > south[1]:
                     south = (x, y)
                 if y < north[1]:
@@ -148,57 +150,73 @@ class DroneControllerThree(object):
                 if x < west[0]:
                     west = (x, y)
 
-        if not any_fire:
-            return []
+            west_x = west[0] - 1 if west[0]-1 > -1 else west[0]
+            east_x = east[0] + 1 if east[0]+1 < self.forest.cols else east[0]
+            north_y = north[1] - 1 if north[1]-1 > -1 else north[1]
+            south_y = south[1] + 1 if south[1]+1 < self.forest.rows else south[1]
 
-        west_x = west[0] - 1 if west[0]-1 > -1 else west[0]
-        east_x = east[0] + 1 if east[0]+1 < self.forest.cols else east[0]
-        north_y = north[1] - 1 if north[1]-1 > -1 else north[1]
-        south_y = south[1] + 1 if south[1]+1 < self.forest.rows else south[1]
+            south_to_east = list(bresenham(south[0], south_y, east_x, east[1]))
+            east_to_north = list(bresenham(east_x, east[1], north[0], north_y))
+            north_to_west = list(bresenham(north[0], north_y, west_x, west[1]))
+            west_to_south = list(bresenham(west_x, west[1], south[0], south_y))
 
-        south_to_east = list(bresenham(south[0], south_y, east_x, east[1]))
-        east_to_north = list(bresenham(east_x, east[1], north[0], north_y))
-        north_to_west = list(bresenham(north[0], north_y, west_x, west[1]))
-        west_to_south = list(bresenham(west_x, west[1], south[0], south_y))
-
-        print("south_to_east", south_to_east)
-        print("east_to_north", east_to_north)
-        print("north_to_west", north_to_west)
-        print("west_to_south", west_to_south)
-
-        additonal = []
-        for p in south_to_east:
-            if p[0] + 1 < self.forest.cols:
-                additonal.append((p[0] + 1, p[1]))
-            if p[1] + 1 < self.forest.rows:
-                additonal.append((p[0], p[1] + 1))
-        
-        for p in east_to_north:
-            if p[0] + 1 < self.forest.cols:
-                additonal.append((p[0] + 1, p[1]))
-            if p[1] - 1 > 0:
-                additonal.append((p[0], p[1] - 1))
-        
-        for p in north_to_west:
-            if p[0] - 1 > 0:
-                additonal.append((p[0] - 1, p[1]))
-            if p[1] - 1 > 0:
-                additonal.append((p[0], p[1] - 1))
-        
-        for p in west_to_south:
-            if p[0] - 1 > 0:
-                additonal.append((p[0] - 1, p[1]))
-            if p[1] + 1 < self.forest.rows:
-                additonal.append((p[0], p[1] + 1))
-        
-        fires = south_to_east + east_to_north + north_to_west + west_to_south + additonal
-
-        # Removing duplicates
-        fires = [p for p in (set(tuple(i) for i in fires))]
-        print(fires)
-        
-        # TODO: Add width to wind direction
-        # TODO: Handle multiple iginition points
-        # TODO: Prioritize the width on the wind direction
+            additonal = []
+            for p in south_to_east:
+                if p[0] + 1 < self.forest.cols:
+                    additonal.append((p[0] + 1, p[1]))
+                if p[1] + 1 < self.forest.rows:
+                    additonal.append((p[0], p[1] + 1))
+            
+            for p in east_to_north:
+                if p[0] + 1 < self.forest.cols:
+                    additonal.append((p[0] + 1, p[1]))
+                if p[1] - 1 > 0:
+                    additonal.append((p[0], p[1] - 1))
+            
+            for p in north_to_west:
+                if p[0] - 1 > 0:
+                    additonal.append((p[0] - 1, p[1]))
+                if p[1] - 1 > 0:
+                    additonal.append((p[0], p[1] - 1))
+            
+            for p in west_to_south:
+                if p[0] - 1 > 0:
+                    additonal.append((p[0] - 1, p[1]))
+                if p[1] + 1 < self.forest.rows:
+                    additonal.append((p[0], p[1] + 1))
+            
+            cluster_fires = south_to_east + east_to_north + north_to_west + west_to_south + additonal
+            cluster_fires = [p for p in (set(tuple(i) for i in cluster_fires))] # Removing duplicates
+            fires = fires + cluster_fires
 
         return [FireInformation(Coordinate(fire[0], fire[1]), 0) for fire in fires]
+
+    def find_clusters(self):
+        """Find clusters of fires"""
+        clusters = []
+        no_of_clusters = len(self.forest.ignition_points)
+        x = []
+        y = []
+
+        for i, cell in enumerate(self.forest.grid):
+            if (not cell.burned) and cell.fire > 0:
+                x.append(self.forest.xy(i)[0])
+                y.append(self.forest.xy(i)[1])
+        
+        data = list(zip(x, y))
+        if len(data) < no_of_clusters:
+            no_of_clusters = len(data)
+        
+        kmeans = KMeans(n_clusters=no_of_clusters, random_state=0).fit(data)
+        for i in range(no_of_clusters):
+            cluster = []
+            for index, point in enumerate(data):
+                if kmeans.labels_[index] == i:
+                    cluster.append(point)
+            clusters.append(cluster)
+        
+        # Uncomment to see the clusters in a plot
+        # plt.scatter(x, y, c=kmeans.labels_)
+        # plt.show()
+
+        return clusters

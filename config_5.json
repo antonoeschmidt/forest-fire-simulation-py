@@ -1,11 +1,16 @@
 {
     "grid_size": 50,
     "wind": [1, 1],
-    "ignition_points": [[1, 1]],
+    "ignition_points": [
+        [1, 1],
+        [49, 1],
+        [1, 49],
+        [49, 49]
+    ],
     "slow_simulation": false,
     "seed": 1,
     "run_until": 200,
-    "number_of_drones": 7,
+    "number_of_drones": 6,
     "drone_speed": 5,
     "drone_base_location": { "x": 42, "y": 42 },
     "base_station_location": [1, 1],
