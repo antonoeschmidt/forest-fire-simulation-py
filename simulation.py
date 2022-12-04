@@ -18,6 +18,7 @@ from ca.simple_cell import SimpleCa, ForestSettings
 from drone.fire_drone_controller_2 import DroneControllerTwo, Coordinate, DroneSettings
 from drone.fire_drone_controller_1 import DroneControllerOne
 from drone.fire_drone_controller_3 import DroneControllerThree
+from drone.fire_drone_controller_4 import DroneControllerFour
 
 simulation_done = threading.local()
 simulation_done.x = False
@@ -140,6 +141,8 @@ def program(settings_json: str):
         drone_base_station = DroneControllerTwo(forest, DroneSettings(**loaded_json))
     elif settings.drone_iteration == 3:
         drone_base_station = DroneControllerThree(forest, DroneSettings(**loaded_json))
+    elif settings.drone_iteration == 4:
+        drone_base_station = DroneControllerFour(forest, DroneSettings(**loaded_json))
     else:
         raise Exception("Iteration not yet supported")
 
