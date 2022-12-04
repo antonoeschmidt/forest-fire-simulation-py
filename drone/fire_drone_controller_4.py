@@ -4,7 +4,6 @@ from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 from sympy import symbols, solve
 
-
 from ca.cellular_automaton import CellularAutomaton
 from drone.fire_coordinate import Coordinate
 from drone.fire_information import FireInformation
