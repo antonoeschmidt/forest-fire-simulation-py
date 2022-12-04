@@ -36,8 +36,11 @@ tasks:
   run:
     desc: Run simulation
     cmds:
-      - "{{.PROJECTPYTHON}} simulation.py"
-  
+      - echo "Running simulation with:"
+      - cat {{.CLI_ARGS}}
+      - "{{.PROJECTPYTHON}} main.py {{.CLI_ARGS}}"
+      - notify-send "Simulation done" "Simulation is done"
+
   flask:
     desc: Run flask
     cmds:

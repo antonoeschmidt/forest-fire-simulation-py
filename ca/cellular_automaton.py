@@ -1,6 +1,7 @@
 import random
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
 from typing import List, Tuple
 
@@ -58,17 +59,29 @@ def cell_state_description() -> None:
 
 
 class Stats(object):
-    def __init__(self, n, m) -> None:
+    def __init__(self, n, m, stat_file: str) -> None:
         self.x = []
         self.y = []
         self.b = []
         self.burned_cells = 0
+        self.burning_cells = 0
         self.total_cells = n * m
+        self.stats_file = stat_file
+        if self.stats_file:
+            self.stats_file = open(stat_file, mode='w+')
+            self.stats_file.write(
+                'time,ratio,burnedcells,burningcells,systemtime\n')
+
+    def __del__(self):
+        if self.stats_file:
+            self.stats_file.close()
 
     def add_stat(self, time):
-        self.x.append(time)
-        self.y.append(self.burned_cells / self.total_cells)
-        self.b.append(self.burned_cells)
+        if self.stats_file:
+            self.stats_file.write(
+                f'{time},{self.burned_cells / self.total_cells},{self.burned_cells},{datetime.now()}\n')
+            if time % 10 == 0:
+                self.stats_file.flush()
         if self.burned_cells / self.total_cells > 1:
             print(self.burned_cells, "/", self.total_cells)
 
@@ -78,7 +91,11 @@ class CellularAutomaton(ABC):
     Class representing a forest as a grid but stored in 1d array
     """
 
-    def __init__(self, rows: int, columns: int, wind: tuple[int, int] = (0, 0), seed: int = 1):
+    def __init__(self, rows: int,
+                 columns: int,
+                 wind: Tuple[int,int] = (0, 0),
+                 seed: int = 1,
+                 stat_file: str = "stats.csv"):
         """
 
         """
@@ -89,15 +106,16 @@ class CellularAutomaton(ABC):
         self._changed = False
         self._step = 0
         self.wind = wind
-        self.stats = Stats(rows, columns)
+        self.stats = Stats(rows, columns, stat_file)
         self.random = random.Random()
         self.random.seed(seed)
+        self.ignition_points = []
         self.generate_grid()
 
     def generate_grid(self):
         for x in range(self.rows * self.cols):
             self.grid.append(
-                CellObject(veg=VegetationType(self.random.randrange(3, 7)),
+                CellObject(veg=VegetationType(self.random.randrange(3, 6)),
                            fire=0,
                            fire_intensity=0,
                            wind=self.wind,
@@ -108,10 +126,11 @@ class CellularAutomaton(ABC):
         """
         Changes a given cell state to burning
         """
+        self.ignition_points.append((x, y))
         index = self.i(x, y)
         self.grid[index] = self.grid[index].factory(fire=1)
 
-    def get(self, x: int, y: int) -> CellObject | None:
+    def get(self, x: int, y: int):
         """
         Get a given cell state.
 
@@ -124,7 +143,7 @@ class CellularAutomaton(ABC):
 
         return self.grid[self.i(x, y)]
 
-    def _get(self, i: int) -> CellObject | None:
+    def _get(self, i: int):
         """
         Internal getter for 1d index
         """
@@ -169,6 +188,7 @@ class CellularAutomaton(ABC):
         """
         self._changed = False
         self._step = self._step + 1
+        self.stats.burning_cells = 0
         new_grid = [self.do_rule(self.xy(i)) for i, c in enumerate(self.grid)]
         self.grid = new_grid
 
@@ -205,7 +225,7 @@ class CellularAutomaton(ABC):
         Returns:
             int: index
         """
-        return x + y * self.cols
+        return int(x + y * self.cols)
 
     def drop_water(self, x: int, y: int, amount: float) -> None:
         """Add hydration to cell
@@ -216,7 +236,7 @@ class CellularAutomaton(ABC):
         @return: None
         """
         index = self.i(x, y)
-        
+
         self.grid[index] = self.grid[index].factory(
             hydration=amount,
             fire_intensity=0,
@@ -235,6 +255,7 @@ class CellularAutomaton(ABC):
 
         if result.fire > 0 and old.fire == 0:
             self.stats.burned_cells += 1
+            self.stats.burning_cells += 1
 
         return result
 

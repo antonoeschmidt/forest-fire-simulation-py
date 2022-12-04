@@ -1,4 +1,4 @@
-from typing import List
+from typing import Tuple, List
 
 from ca.cellular_automaton import CellularAutomaton
 from drone.fire_coordinate import Coordinate
@@ -8,10 +8,11 @@ from drone.fire_drone import FireDrone
 
 class DroneSettings(object):
 
-    def __init__(self, drone_speed: int, drone_base_location: Coordinate, number_of_drones: int, **kwargs):
+    def __init__(self, drone_speed: int, drone_base_location: Coordinate, number_of_drones: int, wind: Tuple[int, int], **kwargs):
         self.number_of_drones = number_of_drones
         self.location = drone_base_location
         self.drone_speed = drone_speed
+        self.wind = wind
 
 
 class FireInformation(object):
@@ -39,7 +40,7 @@ class FireInformation(object):
         return not self.__gt__(other)
 
 
-class DroneController(object):
+class DroneControllerTwo(object):
     """Controls and dispatch drones
     """
 

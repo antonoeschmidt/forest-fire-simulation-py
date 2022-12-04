@@ -2,7 +2,7 @@
 
 # Python Virtual environment
 .mbse/
-
+stats/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

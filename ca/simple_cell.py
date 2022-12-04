@@ -23,11 +23,10 @@ class ForestSettings(object):
         self.veg_low_burn_time = veg_low_burn_time
         self.veg_medium_burn_time = veg_medium_burn_time
 
-
 class SimpleCa(CellularAutomaton):
 
-    def __init__(self, rows: int, columns: int, settings: ForestSettings):
-        super().__init__(rows, columns, settings.wind, settings.seed)
+    def __init__(self, rows: int, columns: int, settings: ForestSettings, stat_file: str = None):
+        super().__init__(rows, columns, settings.wind, settings.seed, stat_file)
         self.settings = settings
 
     def rule(self, xy):
