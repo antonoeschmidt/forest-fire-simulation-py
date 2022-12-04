@@ -69,7 +69,8 @@ class Stats(object):
         self.stats_file = stat_file
         if self.stats_file:
             self.stats_file = open(stat_file, mode='w+')
-            self.stats_file.write('time,ratio,burnedcells,burningcells,systemtime\n')
+            self.stats_file.write(
+                'time,ratio,burnedcells,burningcells,systemtime\n')
 
     def __del__(self):
         if self.stats_file:
@@ -90,7 +91,10 @@ class CellularAutomaton(ABC):
     Class representing a forest as a grid but stored in 1d array
     """
 
-    def __init__(self, rows: int, columns: int, wind: tuple[int, int] = (0, 0), seed: int = 1,
+    def __init__(self, rows: int,
+                 columns: int,
+                 wind: Tuple[int,int] = (0, 0),
+                 seed: int = 1,
                  stat_file: str = "stats.csv"):
         """
 
@@ -111,7 +115,7 @@ class CellularAutomaton(ABC):
     def generate_grid(self):
         for x in range(self.rows * self.cols):
             self.grid.append(
-                CellObject(veg=VegetationType(self.random.randrange(3,6)),
+                CellObject(veg=VegetationType(self.random.randrange(3, 6)),
                            fire=0,
                            fire_intensity=0,
                            wind=self.wind,
@@ -119,7 +123,6 @@ class CellularAutomaton(ABC):
                            burned=False))
 
     def ignite(self, x: int, y: int) -> None:
-        
         """
         Changes a given cell state to burning
         """
@@ -127,7 +130,7 @@ class CellularAutomaton(ABC):
         index = self.i(x, y)
         self.grid[index] = self.grid[index].factory(fire=1)
 
-    def get(self, x: int, y: int) -> CellObject | None:
+    def get(self, x: int, y: int):
         """
         Get a given cell state.
 
@@ -140,7 +143,7 @@ class CellularAutomaton(ABC):
 
         return self.grid[self.i(x, y)]
 
-    def _get(self, i: int) -> CellObject | None:
+    def _get(self, i: int):
         """
         Internal getter for 1d index
         """
