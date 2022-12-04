@@ -119,11 +119,12 @@ class DroneControllerFour(object):
             y_barrier = y_barrier + [(coord[0], coord[1] + factor) for coord in initial_barrier]
 
         if x_direction == "positive" and y_direction == "positive":
-            if abs(self.wind[0]) > abs(self.wind[1]):
-                barrier = se_to_ne + x_barrier + sw_to_se + y_barrier
-            else:
-                barrier = sw_to_se + y_barrier + se_to_ne + x_barrier
             barrier = barrier + ne_to_nw + nw_to_sw
+            if abs(self.wind[0]) > abs(self.wind[1]):
+                barrier = barrier + sw_to_se + y_barrier + se_to_ne + x_barrier
+            else:
+                barrier = barrier + se_to_ne + x_barrier + sw_to_se + y_barrier
+            
 
         elif x_direction == "positive" and y_direction == "negative":
             if abs(self.wind[0]) > abs(self.wind[1]):
