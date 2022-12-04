@@ -7,6 +7,7 @@ from ca.cellular_automaton import CellularAutomaton
 from drone.fire_coordinate import Coordinate
 from drone.fire_state import DroneState
 from drone.fire_drone import FireDrone
+from drone.fire_information import FireInformation
 
 
 
@@ -17,32 +18,6 @@ class DroneSettings(object):
         self.location = drone_base_location
         self.drone_speed = drone_speed
         self.wind = wind
-
-
-class FireInformation(object):
-    """Information holder for fires
-    """
-
-    def __init__(self, location: Coordinate, fire: int):
-        self.location = location
-        self.fire = fire
-
-    def __eq__(self, other):
-        if isinstance(other, FireInformation):
-            return self.fire == other.fire and self.location == other.location
-        return False
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    def __gt__(self, other):
-        if isinstance(other, FireInformation):
-            return self.fire > other.fire
-        return False
-
-    def __lt__(self, other):
-        return not self.__gt__(other)
-
 
 class DroneControllerThree(object):
     """Controls and dispatch drones

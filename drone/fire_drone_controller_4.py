@@ -2,12 +2,14 @@ from typing import Tuple, List
 from bresenham import bresenham
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
+from sympy import symbols, solve
+
 
 from ca.cellular_automaton import CellularAutomaton
 from drone.fire_coordinate import Coordinate
+from drone.fire_information import FireInformation
 from drone.fire_state import DroneState
 from drone.fire_drone import FireDrone
-
 
 class DroneSettings(object):
 
@@ -39,19 +41,21 @@ class DroneControllerFour(object):
         self.drones = [FireDrone(x, settings.drone_speed, self.location.x, self.location.y) for x in
                        range(self.number_of_drones)]
 
-        print(f"Drones: {self.number_of_drones}")
+
+
+        #print(f"Drones: {self.number_of_drones}")
 
     def step(self) -> None:
         """Updating all drones respectively
 
         @return: None
         """
-        print(len(self.barrier))
+        #print(len(self.barrier))
 
         for drone in self.drones:
             if DroneState.IDLE == drone.state:
                 if len(self.barrier) > 0:
-                    drone.set_target(self.barrier.pop())
+                    drone.set_target(self.barrier.pop().location)
                     drone.state = DroneState.FIRE_FIGHTING
                 else:
                     pass
@@ -63,7 +67,7 @@ class DroneControllerFour(object):
             elif DroneState.REFILLING == drone.state:
                 if len(self.barrier) > 0:
                     try:
-                        drone.set_target(self.barrier.pop())
+                        drone.set_target(self.barrier.pop().location)
                         drone.state = DroneState.FIRE_FIGHTING
                     except StopIteration:
                         pass
@@ -81,7 +85,7 @@ class DroneControllerFour(object):
         ignition_point = self.forest.ignition_points[0]
         ignition_point = Coordinate(ignition_point[0], ignition_point[1])
 
-        rounds = int(ignition_point.distance(self.location) / drone_speed)
+        rounds = int(ignition_point.distance(self.location) / drone_speed) + 1
         north_west = (ignition_point.x - rounds, ignition_point.y - rounds)
         south_west = (ignition_point.x - rounds, ignition_point.y + rounds)
         south_east = (ignition_point.x + rounds, ignition_point.y + rounds)
@@ -105,54 +109,33 @@ class DroneControllerFour(object):
         # x barrier is the barrier that blocks the x wind
         x_barrier = []
         # the barrier is always one in depth, so we start at 2.
-        for i in range(1, abs(self.wind[0] - 1)):
+        
+        for i in range(1, abs(self.wind[0])):
             initial_barrier = se_to_ne if x_direction == "positive" else nw_to_sw
             factor = i * (1 if x_direction == "positive" else (-1))
 
             x_barrier = x_barrier + [(coord[0] + factor, coord[1]) for coord in initial_barrier]
 
         y_barrier = []
-        for i in range(1, abs(self.wind[1] - 1)):
+        for i in range(1, abs(self.wind[1])):
             initial_barrier = sw_to_se if y_direction == "positive" else ne_to_nw
             factor = i * (1 if y_direction == "positive" else (-1))
 
             y_barrier = y_barrier + [(coord[0], coord[1] + factor) for coord in initial_barrier]
 
-        if x_direction == "positive" and y_direction == "positive":
-            barrier = barrier + ne_to_nw + nw_to_sw
-            if abs(self.wind[0]) > abs(self.wind[1]):
-                barrier = barrier + sw_to_se + y_barrier + se_to_ne + x_barrier
-            else:
-                barrier = barrier + se_to_ne + x_barrier + sw_to_se + y_barrier
-            
 
-        elif x_direction == "positive" and y_direction == "negative":
-            if abs(self.wind[0]) > abs(self.wind[1]):
-                barrier = se_to_ne + x_barrier + ne_to_nw + y_barrier
-            else:
-                barrier = ne_to_nw + y_barrier + se_to_ne + x_barrier
-            barrier = barrier + nw_to_sw + sw_to_se
-
-        elif x_direction == "negative" and y_direction == "positive":
-            if abs(self.wind[0]) > abs(self.wind[1]):
-                barrier = nw_to_sw + x_barrier + sw_to_se + y_barrier
-            else:
-                barrier = sw_to_se + y_barrier + nw_to_sw + x_barrier
-            barrier = barrier + ne_to_nw + se_to_ne
-
-        elif x_direction == "negative" and y_direction == "negative":
-            if abs(self.wind[0]) > abs(self.wind[1]):
-                barrier = nw_to_sw + x_barrier + ne_to_nw + y_barrier
-            else:
-                barrier = ne_to_nw + y_barrier + nw_to_sw + x_barrier
-            barrier = barrier + se_to_ne + sw_to_se
-
-        barrier = [Coordinate(x[0], x[1]) for x in barrier if self.forest.cols > x[0] > 0
-                   and self.forest.rows > x[1] > 0]
+        barrier = x_barrier + se_to_ne + y_barrier + sw_to_se + nw_to_sw + ne_to_nw
 
         if no_of_drones < len(barrier):
             self.calculate_barrier(no_of_drones * 2, 1 + (drone_speed / 2))
 
+        point = self.find_point(rounds)
+        barrier = [FireInformation(Coordinate(x[0], x[1]), point) for x in barrier if self.forest.cols > x[0] > 0
+                   and self.forest.rows > x[1] > 0]
+        
+        barrier.sort()
+        # print([(x.location.x, x.location.y) for x in barrier])
+        
         return barrier
 
     def find_fires(self):
@@ -258,3 +241,38 @@ class DroneControllerFour(object):
         # plt.show()
 
         return clusters
+    
+    def find_point(self, rounds: int):
+        x = symbols('x')
+        y = symbols('y')
+        
+        wind = self.wind
+        ip = self.forest.ignition_points[0]
+        # tvær vektor ^ = (-y, x)
+        t_vector = (-wind[1], wind[0])
+        (x1, y1) = self.wind[0], self.wind[1]
+        
+        if y1 < -abs(x1):
+            line = ip[1] - rounds # NE - NW
+            print("NE - SE")
+        elif x1 < -abs(y1):
+            line = ip[0] - rounds# NW - SE
+            print("NW - SE")
+        elif y1 >= abs(x1):
+            line = ip[1] + rounds # SE - SW
+            print("SE - SW")
+        elif x1 >= abs(y1):
+            line = ip[0] + rounds # NE - SE
+            print("NE - SE")
+            
+        lines_equation_normal = t_vector[0] * (x-ip[0]) + t_vector[1] * (y-ip[1])
+        lines_equation = t_vector[0] * (x-ip[0]) + t_vector[1] * (y-ip[1]) - line
+        fx = solve(lines_equation, y)
+        res1 = solve(fx, x)
+        res_x = (res1.get(x))
+        print(f'ResX: {res_x}')
+        res_2 = solve(lines_equation_normal.subs(x, res_x),y)
+        res_y = res_2[0]
+        print(f'ResY: {res_y}')
+
+        return Coordinate(res_x, res_y)
